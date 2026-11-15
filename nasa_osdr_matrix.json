@@ -1,0 +1,308 @@
+[
+  {
+    "path_id": 1,
+    "name_ar": "المسار النفسي والسلوكي والنوم (Neurolab STS-90/95 + HERA + ARCHeR — طالب العلوم 3)",
+    "name_en": "Behavioral Health, Sleep & Circadian Rhythm (Neurolab STS-90/95 & HERA)",
+    "organ": "brain",
+    "indicators": [
+      {
+        "name": "صافي ساعات النوم اليومية (Actigraphy Sleep Time - Dijk & Czeisler NTRS 20030068197)",
+        "unit": "hours",
+        "current_val": 6.5,
+        "normal_min": 7.0,
+        "normal_max": 8.5,
+        "critical_min": 3.8,
+        "critical_max": 10.0,
+        "notes_ar": "في دراسة STS-90/95 (صفحة 6): متوسط فترة النوم كان 427.6 دقيقة (6.5 ساعة صافي نوم)، وهبط في بعض الليالي إلى 3.8 ساعات! والمنومات هي الدواء #1 استخداماً في 219 سجلاً طبياً لرواد الفضاء (صفحة 2).",
+        "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+      },
+      {
+        "name": "وسيط سرعة الاستجابة وهفوات اليقظة (Dinges PVT Median RT & Lapses > 500ms - p.9)",
+        "unit": "ms",
+        "current_val": 265,
+        "normal_min": 220,
+        "normal_max": 280,
+        "critical_min": 150,
+        "critical_max": 500,
+        "notes_ar": "في بطارية د. ديفيد دينجس (Figure 9 صفحة 9): الوسيط الطبيعي 255-270 ms، وأي استجابة تتجاوز 500 ms تُسجَّل رسمياً كـ «هفوة يقظة خطيرة» (PVT Lapse)!",
+        "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+      },
+      {
+        "name": "شدة إضاءة المقصورة (Cabin Illuminance Lux - Actillume STS-90 p.7-8)",
+        "unit": "lux",
+        "current_val": 350,
+        "normal_min": 300,
+        "normal_max": 500,
+        "critical_min": 9,
+        "critical_max": 60000,
+        "notes_ar": "في الطابق الأوسط (Middeck) هبطت الإضاءة إلى 9 lux فقط نهاراً، بينما قفزت في قمرة القيادة (Flight Deck) إلى 60,000-79,000 lux كل 90 دقيقة، مما أخر دورة الكورتيزول البولي 6 ساعات!",
+        "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+      }
+    ],
+    "dag_link": "دورة شروق/غروب كل 90 دقيقة + إضاءة خافتة نهاراً (9 lux في Middeck) أو نبضات ضوئية مسائية (60,000 lux) + جداول عمل أقصر من 24 ساعة (23.5h) أو يوم مريخي (24.6h) ← تأخر ذروة الكورتيزول البولي 6 ساعات وانخفاض نوم الموجة البطيئة (SWS) ← نوم 3.8-6.5 ساعة وهفوات يقظة (PVT Lapses > 500ms)",
+    "dag_link_en": "90-min Orbital Dawn/Dusk + Dim Middeck (9 lux) / Evening Light Pulses (60,000 lux) → 6-hr Urinary Cortisol Delay & SWS Drop → Sleep Curtailment (3.8-6.5h) & PVT Lapses (>500ms)",
+    "level1": [
+      "ضبط إضاءة المقصورة الذكي (STS-90 Light Protocol p.8-10): رفع إضاءة العمل النهارية إلى 300-500 lux ومنع التعرض لنبضات الضوء العالية (60,000 lux في قمرة القيادة) قبل النوم لتفادي تأخر الساعة البيولوجية (SCN)",
+      "العناية بالحديقة الفضائية (Space Gardening & Veggie Monitoring - HRP) لتخفيف شعور العزلة والاحتجاز كما في محاكي (HERA 650-sq-ft Habitat) مع تمرين تنفس موجه",
+      "إلغاء جدول «Slam Shifting» وتطبيق تدوير الورديات مع عقارب الساعة (Clockwise Shift Rotation) وإنجاز مهام درع المرونة التحفيزية (Gamification XP)"
+    ],
+    "level1_en": [
+      "Regulate cabin lighting: boost daytime work light from 9 lux to 300-500 lux and block pre-sleep 60,000 lux flight-deck pulses (Dijk & Czeisler p.8-10)",
+      "Engage in Space Gardening (Veggie Monitoring) psychological countermeasure and HERA isolation resilience routine",
+      "Avoid abrupt 'slam shifting' schedules and complete Resilience Shield Gamification quests"
+    ],
+    "level2": [
+      "تحذير دوائي حاسم من دراسة ناسا (STS-90/95 p.1, 2, 6, 9): المنومات التقليدية (GABAa-benzodiazepine hypnotics) تضعف سرعة الاستجابة عند الاستيقاظ في الطوارئ، وجرعة الميلاتونين (0.3 mg) وحدها لا تكفي إن أُعطيت في طور سيركاديان خاطئ؛ لذا يُعطى الميلاتونين (0.3 mg إلى 3 mg) حصرياً في طور غياب الميلاتونين الداخلي مع تعتيم كامل (< 5 lux)",
+      "تفعيل وضع الحوكمة السري (Advisory Governance) لإعادة جدولة المهام الحرجة عند تجاوز هفوات اليقظة (PVT Lapses > 500ms)"
+    ],
+    "level2_en": [
+      "NASA Neurolab Warning (p.2, 6): Avoid GABAa-benzodiazepine hypnotics during emergency standby; administer phase-timed Melatonin (0.3-3 mg) strictly under <5 lux darkness",
+      "Activate Privacy-First Governance Mode to reschedule high-risk tasks when PVT Lapses (>500ms) increase"
+    ],
+    "pharmacy": {
+      "formulary_tier": "Personalized Formulary (5 Selected Preferences/Crewmember - ExMC Med02 Fig. 3)",
+      "drug_name": "Phase-Timed Melatonin (0.3 mg - 3.0 mg per Neurolab STS-90 Protocol) — Avoid Benzodiazepines",
+      "base_dose_mg": 3.0,
+      "potency_pct": 86.5,
+      "adjusted_dose_mg": 3.5,
+      "verification_method": "Salivary Melatonin & Urinary Cortisol Phase Check + Handheld Raman API Scan",
+      "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+    }
+  },
+  {
+    "path_id": 2,
+    "name_ar": "مسار القلب والأوعية والعين الفضائية (SANS & Thigh Cuff & Venous Haemostasis — طالب العلوم 2)",
+    "name_en": "Cardiovascular, Venous Haemostasis & Neuro-Ocular Syndrome (SANS)",
+    "organ": "heart",
+    "indicators": [
+      {
+        "name": "معدل نبض القلب أثناء الراحة (Resting Heart Rate - Tempus Pro / Standard Measures)",
+        "unit": "bpm",
+        "current_val": 72,
+        "normal_min": 60,
+        "normal_max": 90,
+        "critical_min": 48,
+        "critical_max": 120,
+        "notes_ar": "يُدمج عبر جهاز التطبيب عن بُعد التجاري (Tempus Pro) ومقاييس (Artemis II Standard Measures)",
+        "source": "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/"
+      },
+      {
+        "name": "ضغط الدم الانقباضي وضغط السائل الدماغي (Systolic BP & Brain Fluid Pressure / SANS)",
+        "unit": "mmHg",
+        "current_val": 114,
+        "normal_min": 95,
+        "normal_max": 125,
+        "critical_min": 88,
+        "critical_max": 145,
+        "notes_ar": "تحول السوائل للرأس يرفع الضغط داخل الجمجمة (ICP) ويسبب متلازمة العين العصبية الفضائية (SANS) وتغيرات تخثر الدم الوريدي (Venous Haemostasis)",
+        "source": "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/"
+      }
+    ],
+    "dag_link": "انعدام الجاذبية ← اندفاع السوائل نحو الرأس (Cephalad Fluid Shift) وتغير جريان وتخثر الدم الوريدي (Venous Haemostasis) ← ارتفاع الضغط داخل الجمجمة ومتلازمة العين الفضائية (SANS) + هبوط الضغط الانتصابي عند الهبوط على القمر/المريخ (Simulating Manual Piloting)",
+    "dag_link_en": "Microgravity Cephalad Fluid Shift → Elevated Intracranial Pressure (SANS Eye/Brain Changes) + Venous Haemostasis Shift & Landing Orthostatic Intolerance",
+    "level1": [
+      "ارتداء الأربطة الفخذية الضاغطة (Thigh Cuffs - HRP Study) وبنطال الضغط السلبي (LBNP) لإبقاء السوائل في الساقين وحماية العين والدماغ من متلازمة (SANS)",
+      "تناول مكملات فيتامين ب المركب اليومية (B-Complex HRP Study) للوقاية من تغيرات الدماغ والعين المرتبطة بالفضاء",
+      "إجراء فحص الأوعية الدموية والقلب والعين بالموجات فوق الصوتية وجهاز (Tempus Pro) مع بروتوكول التحميل المائي الملحي قبل الهبوط"
+    ],
+    "level1_en": [
+      "Apply NASA HRP Thigh Cuffs and Lower Body Negative Pressure (LBNP) to sequester fluids in legs and mitigate SANS eye/brain pressure",
+      "Administer daily B-Complex vitamin supplement (HRP B-Complex study) to protect neuro-ocular function",
+      "Perform Venous Haemostasis & ocular ultrasound via Tempus Pro telemedicine integration"
+    ],
+    "level2": [
+      "تفعيل محاكاة الهبوط اليدوي (Simulating Manual Piloting Check) للتأكد من عدم تأثر قدرات القيادة بالانتقال الجاذبي قبل الهبوط على القمر أو المريخ",
+      "التدخل الدوائي الوعائي أو المضاد للتخثر من صيدلية الطوارئ (Emergency Medicine Formulary) بعد التحقق الطيفي (FTIR) وإرسال كبسولة التزامن الموقعة للأرض"
+    ],
+    "level2_en": [
+      "Run Manual Piloting Gravity-Transition readiness check prior to lunar/planetary landing",
+      "Administer Emergency Medicine Formulary vascular/anticoagulant countermeasure and transmit 2KB Signed Burst"
+    ],
+    "pharmacy": {
+      "formulary_tier": "Emergency Medicine + Personalized B-Complex Supplement (HRP & ExMC Med02)",
+      "drug_name": "Daily B-Complex (SANS Countermeasure) + Midodrine Vascular Support",
+      "base_dose_mg": 100,
+      "potency_pct": 88.0,
+      "adjusted_dose_mg": 114,
+      "verification_method": "FTIR Spectroscopy + Pyxis Medical Data Architecture (MED07)",
+      "source": "https://ntrs.nasa.gov/citations/20170001651"
+    }
+  },
+  {
+    "path_id": 3,
+    "name_ar": "المناعة والأيض والإشعاع الفضائي (OCHMO-TB-020 + ExMC Med02 — طالب الكيمياء)",
+    "name_en": "Immune System, Metabolism & Space Radiation (OCHMO-TB-020 & ExMC Med02)",
+    "organ": "blood",
+    "indicators": [
+      {
+        "name": "جرعة الإشعاع الفعالة (Effective Radiation Dose - OCHMO-TB-020 p.4-5)",
+        "unit": "mSv",
+        "current_val": 86,
+        "normal_min": 0,
+        "normal_max": 167,
+        "critical_min": 0,
+        "critical_max": 250,
+        "notes_ar": "ISS 180d = 77-86 mSv | Lunar 180d = 167 mSv | SPE Event Limit [V1 4031] = 250 mSv | Career Limit [V1 4030] = 600 mSv",
+        "source": "https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf"
+      },
+      {
+        "name": "سكر الدم الصائم وحرارة الجسم (Fasting Blood Sugar & Immune Biomarkers)",
+        "unit": "mg/dL",
+        "current_val": 92,
+        "normal_min": 70,
+        "normal_max": 105,
+        "critical_min": 65,
+        "critical_max": 140,
+        "notes_ar": "مرتبط بتجارب Artemis II Immune Biomarkers و Altered Immunity في اللعاب والدم",
+        "source": "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/"
+      }
+    ],
+    "dag_link": "الأشعة الكونية (GCR 1.3 mSv/d) والعواصف الشمسية (SPE > 250 mSv) + تغير ميكروبات المقصورة (HERA) ← إجهاد تأكسدي وتثبيط المناعة (Altered Immunity) + تحلل المادة الفعالة للأدوية إشعاعياً (API Radiolysis - Du et al., 2011; Wotring, 2016)",
+    "dag_link_en": "GCR (1.3 mSv/d) & SPE (>250 mSv) + Closed-Habitat Microbiome Shift → Immune Dysregulation + Drug API Radiolysis (Du 2011; Wotring 2016)",
+    "level1": [
+      "إعادة تشكيل مخبأ العاصفة الإشعاعية بأكياس الماء (Water-Bag Storm Shelter - OCHMO-TB-020 p.8): تكديس أكياس الماء والمؤن بسمك 10-20 cm ماء يخفض جرعة الكبسولة أثناء العاصفة الشمسية من 214-259 mSv إلى 65-83 mSv فقط!",
+      "إنهاء السير الفضائي (EVA Termination) خلال أقل من ساعتين عند انطلاق إنذار الجرعات الفوري [V2 6100]",
+      "تطبيق بروتوكول التغذية المعززة للمناعة (Food Physiology) وفحص مسحات الميكروبات في المقصورة (HERA Swabs)"
+    ],
+    "level1_en": [
+      "Reconfigure Water-Bag Storm Shelter (10-20 cm water equivalent per OCHMO-TB-020 p.8): cuts capsule SPE dose from 214-259 mSv down to 65-83 mSv",
+      "Terminate EVA within <2 hours upon real-time dosimetry alert [V2 6100]",
+      "Apply Food Physiology immune-enhancing diet and HERA microbial swabbing"
+    ],
+    "level2": [
+      "فحص الدواء فوريّاً دون إتلافه بجهاز المطياف المحمول (Handheld Raman / FTIR Spectroscopy - ExMC Med02 Q4) للتحقق من نسبة المادة الفعالة (API) وخلوه من نواتج التحلل السامة (Substituted Anilines - Q5)",
+      "إعطاء الجرعة المعدلة وفق دليل (Verified as Safe - VAS Dosing Monograph - ExMC p.15)، أو طباعة قرص مخصص الجرعة عبر الطباعة ثلاثية الأبعاد (Fused-Filament 3D Printing - Goyanes et al., 2014)"
+    ],
+    "level2_en": [
+      "Nondestructive real-time API check via Handheld Raman / FTIR Spectroscopy (ExMC Med02 Q4) to rule out toxic radiolysis degradants (Q5)",
+      "Administer VAS Dosing Monograph compensated dose, or print personalized tablet via Fused-Filament 3D Printing (Goyanes et al., 2014)"
+    ],
+    "pharmacy": {
+      "formulary_tier": "Core Formulary (Top 20 Pyxis-Tracked - MED07) + 3D-Printed Backup (ExMC Med02)",
+      "drug_name": "Valacyclovir / Radioprotective Antiviral (550-day ISS Stability - Wotring 2016)",
+      "base_dose_mg": 500,
+      "potency_pct": 78.4,
+      "adjusted_dose_mg": 635,
+      "verification_method": "Handheld Raman (Hajjou & Lukulay 2014) + FTIR + VAS Monograph",
+      "source": "https://ntrs.nasa.gov/citations/20170001651"
+    }
+  },
+  {
+    "path_id": 4,
+    "name_ar": "العظام والكلى وصحة الجهاز البولي (OCHMO-MTB-003 Rev A — طالب الكيمياء)",
+    "name_en": "Bone Resorption, Renal Stones & Urinary Health (OCHMO-MTB-003 Rev A)",
+    "organ": "bones",
+    "indicators": [
+      {
+        "name": "إفراز الكالسيوم البولي وفوق الإشباع (Urinary Calcium Excretion)",
+        "unit": "mg/day",
+        "current_val": 195,
+        "normal_min": 100,
+        "normal_max": 240,
+        "critical_min": 80,
+        "critical_max": 281,
+        "notes_ar": "حصوات الكلى هي السبب #2 للإخلاء الطبي من ISS وتسمم الدم البولي (Urosepsis) هو السبب #3 (OCHMO-MTB-003 p.1)",
+        "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+      },
+      {
+        "name": "حصة الماء اليومية الإلزامية (Potable Hydration [V2 6109] & EVA [V2 11030])",
+        "unit": "mL/day",
+        "current_val": 2500,
+        "normal_min": 2500,
+        "normal_max": 3200,
+        "critical_min": 1600,
+        "critical_max": 4000,
+        "notes_ar": "الحد الأدنى الإلزامي في [V2 6109] هو 2500 mL/day + 240 mL/hr أثناء الـ EVA [V2 11030]، ومعادلة البول الكلي: Vu = 3 + 2.5t لتر",
+        "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+      }
+    ],
+    "dag_link": "انعدام الجاذبية ← ذوبان العظام ([V1 4027] هدف >= 95% للفقرات و90% لعنق الفخذ) + التوتر السطحي للبول في المثانة واحتباس البول (أعلى 4.5x لدى الرائدات الإناث - p.8) + حفاضات MAG وأدوية الدوار ← حصوات كالسيوم أوكسالات (Cut-off 3 mm) أو عدوى Pseudomonas (حادثة Fred Haise في Apollo 13)",
+    "dag_link_en": "0g Bone Loss + Bladder Surface-Tension Retention (4.5x higher in females) + MAG/Anticholinergics → CaOx Stones (3mm cut-off) & Urosepsis",
+    "level1": [
+      "تطبيق معيار الإماهة الإلزامي [V2 6109]: شرب >= 2.5 لتر ماء يومياً (بدرجة 18-27°C) + 240 مل/ساعة أثناء الـ EVA، وتجنب حبس البول الاختياري",
+      "فحص الكليتين والمثانة ذاتياً ببرنامج ناسا الموجه للسونار (AMOS - Autonomous Medical Officer Support Ultrasound - p.5) لتحديد حجم الحصوة (< 3 mm تمر تلقائياً بنسبة > 90% خلال 7 أيام، مقابل >= 3 mm)",
+      "تمارين المقاومة (ARED / Zero T2) للحفاظ على كثافة عظم الورك والعمود الفقري >= 95% [V1 4027]"
+    ],
+    "level1_en": [
+      "Enforce NASA-STD-3001 [V2 6109] hydration: >=2.5 L/day potable water + 240 mL/hr during EVA [V2 11030]",
+      "Scan kidneys & bladder via NASA AMOS Guided Ultrasound software (p.5) to evaluate stone against 3 mm spontaneous passage cut-off (>90% pass in ~7d)",
+      "Execute ARED / Zero T2 exercise countermeasures to maintain hip/spine BMD >=95% [V1 4027]"
+    ],
+    "level2": [
+      "البروتوكول الدوائي والموجي (OCHMO-MTB-003 p.5, 7): إعطاء سترات البوتاسيوم (KCit - Whitson 2009)، وتامسولوسين (Tamsulosin - Cui 2019) لإرخاء الحالب، والبيسفوسفونات (Leblanc 2013)، مع تفتيت/دفع الحصوة بالموجات فوق الصوتية (Propulsive Ultrasound / Burst Wave Lithotripsy)",
+      "عند احتباس البول الحاد (9 حالات فضائية - p.8-9) أو عدوى المسالك (UTI): قسطرة موجهة بالسونار (Ultrasound-Guided Catheterization) ومضاد حيوي مفحوص بـ Raman لمنع تسمم الدم (Urosepsis كما في Apollo 13 Fred Haise)"
+    ],
+    "level2_en": [
+      "Administer Potassium Citrate (KCit), Tamsulosin (Cui 2019), Bisphosphonates, and apply Propulsive Ultrasound / Burst Wave Lithotripsy",
+      "For acute urinary retention or UTI: perform ultrasound-guided catheterization and Raman-verified antibiotic therapy to prevent urosepsis"
+    ],
+    "pharmacy": {
+      "formulary_tier": "Core Formulary Renal & Urologic Kit (OCHMO-MTB-003 p.7 & ExMC Med02)",
+      "drug_name": "Potassium Citrate (KCit) + Tamsulosin + Bisphosphonates + Antibiotic",
+      "base_dose_mg": 1080,
+      "potency_pct": 84.0,
+      "adjusted_dose_mg": 1285,
+      "verification_method": "Original Packaging Shelf-Life (ExMC Q3) + FTIR Check + AMOS Ultrasound",
+      "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+    }
+  },
+  {
+    "path_id": 5,
+    "name_ar": "البيئة المغلقة وثاني أكسيد الكربون (OCHMO-TB-004 + HIDH Metabolic Simulator — طالب العلوم 2)",
+    "name_en": "Hostile Closed Environment & CO2 Scrubbing (OCHMO-TB-004 & HIDH)",
+    "organ": "lungs",
+    "indicators": [
+      {
+        "name": "ضغط ثاني أكسيد الكربون الجزئي (Cabin/Suit ppCO2 - NASA-STD-3001 [V2 6004])",
+        "unit": "mmHg",
+        "current_val": 1.8,
+        "normal_min": 0.6,
+        "normal_max": 2.5,
+        "critical_min": 0.2,
+        "critical_max": 3.0,
+        "notes_ar": "في دراسة البعثات 2 إلى 31 (N=49): 38.7% من الرواد أصيبوا بصداع! لإبقاء خطر الصداع < 1% يجب أن يظل متوسط 7 أيام < 2.5 mmHg، وحد الساعة [V2 6004] <= 3.0 mmHg (في Apollo 13 وصل إلى 14.9 mmHg!).",
+        "source": "https://www.nasa.gov/ochmo-tb-004-carbon-dioxide-2/"
+      },
+      {
+        "name": "معدل إنتاج CO2 الأيضي للرائد (Crew Metabolic CO2 Output - HIDH Table)",
+        "unit": "g/min",
+        "current_val": 0.72,
+        "normal_min": 0.45,
+        "normal_max": 0.80,
+        "critical_min": 0.20,
+        "critical_max": 4.98,
+        "notes_ar": "من جدول HIDH (2014): أثناء النوم 0.455 g/min | الوضع العادي 0.72 g/min | أثناء التمرين (75% VO2 max) يقفز إلى 4.985 g/min (1.04 kg/day) بمعامل تنفس RQ = 0.92!",
+        "source": "https://www.nasa.gov/ochmo-tb-004-carbon-dioxide-2/"
+      }
+    ],
+    "dag_link": "غياب الحمل الحراري في الجاذبية الصغرى + ارتفاع الأيض أثناء التمرين (4.98 g/min CO2) ← تكون جيوب CO2 موضعية حول الرأس والبدلة (2.8-4.5 mmHg صداع؛ 3.5 mmHg سعال وتشوش رؤية؛ > 4.5 mmHg غثيان وخدر العصب القحفي الخامس؛ 14.9 mmHg في Apollo 13 وSoyuz 23)",
+    "dag_link_en": "0g Lack of Convection + Exercise Metabolic Surge (4.98 g/min CO2) → Local CO2 Pockets (>2.5 mmHg headache risk; >3.0 mmHg [V2 6004] limit; 4.5 mmHg 5th cranial nerve dysesthesia; 14.9 mmHg Apollo 13 crisis)",
+    "level1": [
+      "تفعيل أنظمة إزالة CO2 في المركبة (OCHMO-TB-004): تشغيل المراوح الشخصية ومراجعة نظام (CDRA ذي المناخل الجزيئية الزيوليتية 4BMS) أو نظام (Vozdukh) أو مقشر الأمين الحراري (TAS - يزيل 3.7 kg/day عند 2 mmHg) ونظام (CAMRAS SA9T)",
+      "في البدلة الفضائية (EMU / PLSS / APLSS): التحقق من تدفق غسيل الغاز (CO2 Washout) من خلف الخوذة فوق الوجه عبر خراطيش (LiOH / METOX) أو نظام الأمين سريع الدورة (RCA)",
+      "التدخل الغذائي الأيضي الذكي (Da Poian et al., 2010 في OCHMO-TB-004): تعديل وجبة الرائد بزيادة نسبة الدهون وتقليل الكربوهيدرات لخفض معامل التنفس (RQ < 0.92) وتقليل إنتاج CO2 الجسدي في المقصورة!"
+    ],
+    "level1_en": [
+      "Verify spacecraft CO2 scrubbing: cycle CDRA (4-Bed Molecular Sieve zeolite), Vozdukh, Thermal Amine Scrubber (TAS - 3.7 kg/day at 2 mmHg), or CAMRAS (SA9T)",
+      "During EVA (PLSS / APLSS): verify helmet rear-to-front CO2 washout loop across LiOH / regenerable METOX / Rapid Cycle Amine (RCA) cartridges",
+      "Metabolic Dietary Countermeasure (OCHMO-TB-004 / Da Poian 2010): shift macronutrient ratio toward higher fat and lower carbohydrate to reduce Respiratory Quotient (RQ < 0.92) and lower crew CO2 output"
+    ],
+    "level2": [
+      "تفعيل عبوات هيدروكسيد الليثيوم الاحتياطية (LiOH Canisters: تفاعل طارد للحرارة يحول CO2 إلى Li2CO3 صلب وماء كما أنقذ طاقم Apollo 13 من 14.9 mmHg إلى 1.0 mmHg) أو فتح صمام التطهير الطارئ في الخوذة (Emergency Purge Valve) مع مراقبة ضغط المقصورة الكلي (34.5 إلى 103 kPa وفق [V2 6006])",
+      "فحص مسكن الصداع (Ibuprofen) بجهاز المطياف (FTIR - Matkovic et al., 2005 في ExMC Med02) قبل إعطائه للرائد (الذي احتاجه 38.7% من رواد البعثات 2-31)"
+    ],
+    "level2_en": [
+      "Deploy backup LiOH canisters (exothermic conversion to Li2CO3 + H2O, dropping Apollo 13 CO2 from 14.9 to 1.0 mmHg) or activate suit Emergency Purge Valve while maintaining cabin pressure (34.5-103 kPa [V2 6006])",
+      "Verify Ibuprofen analgesic potency via FTIR Spectroscopy (Matkovic et al., 2005 in ExMC Med02) for CO2-induced headache relief"
+    ],
+    "pharmacy": {
+      "formulary_tier": "Core Formulary Analgesic + ECLSS LiOH/METOX Chemical Scrubbers",
+      "drug_name": "Ibuprofen (FTIR Quantified - Matkovic 2005) + LiOH Chemical Sorbent + Low-RQ Diet",
+      "base_dose_mg": 400,
+      "potency_pct": 89.2,
+      "adjusted_dose_mg": 450,
+      "verification_method": "FTIR Spectroscopy Assay (Matkovic et al., 2005 - ExMC Ref #22) + CDRA/TAS Telemetry",
+      "source": "https://www.nasa.gov/ochmo-tb-004-carbon-dioxide-2/"
+    }
+  }
+]

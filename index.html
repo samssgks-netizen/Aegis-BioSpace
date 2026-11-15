@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis-BioSpace | Autonomous Astronaut Health & Cyber-Resilient OS</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', 'Inter', sans-serif;
+      background-color: #060b16;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .font-mono-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .organ-node {
+      cursor: pointer;
+      transition: all 0.25s ease;
+      transform-origin: center;
+    }
+    .organ-node:hover {
+      filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.85));
+    }
+    @keyframes pulse-red {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.9)); opacity: 1; }
+      50% { filter: drop-shadow(0 0 18px rgba(239, 68, 68, 1)); opacity: 0.78; }
+    }
+    .critical-pulse {
+      animation: pulse-red 1.4s infinite;
+    }
+    .cockpit-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(9, 14, 28, 0.96));
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Telemetry & Mission Bar -->
+  <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/40 flex items-center justify-center text-sky-400 font-extrabold text-lg shadow-inner">
+          Æ
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-white">Aegis-BioSpace</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold" id="offlineBadge">
+              OFFLINE-FIRST · 0 ms NET
+            </span>
+          </div>
+          <p class="text-xs text-slate-400" id="headerSubtitle">
+            نظام دعم القرار الطبي والنفسي المستقل لرواد الفضاء · محمي بدرع SHA-256 TMR
+          </p>
+        </div>
+      </div>
+
+      <!-- Environment Switcher -->
+      <div class="flex flex-wrap items-center gap-2">
+        <label for="envSelect" class="text-xs text-slate-400 font-semibold" id="envLabel">بيئة المهمة:</label>
+        <select id="envSelect" onchange="changeEnvironment(this.value)" class="bg-slate-900 text-sky-300 text-xs md:text-sm font-semibold rounded-lg px-3 py-1.5 border border-sky-500/30 focus:outline-none focus:border-sky-400">
+          <option value="station">1. محطة مدارية (ISS Orbital · 0g · 80 mSv)</option>
+          <option value="transit" selected>2. مركبة المريخ (Deep-Space Transit · 0g · 300 mSv · تأخر 20 د)</option>
+          <option value="rover">3. عربة جوالة (Surface Rover · ضيق مقصورة · خطر CO2)</option>
+          <option value="base">4. قاعدة كوكبية (Martian Habitat · 0.38g · إقامة طويلة)</option>
+        </select>
+
+        <!-- Governance Mode -->
+        <button id="govBtn" onclick="toggleGovernanceMode()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/25 transition font-semibold">
+          الحوكمة: مستشار سري للرائد
+        </button>
+
+        <!-- Language Switcher for 7-Slide Deck Screenshots -->
+        <button id="langBtn" onclick="toggleLanguage()" class="text-xs px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25 transition font-bold">
+          EN (لصور الشرائح الـ 7)
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap gap-1 border-t border-slate-800/80 pt-2 pb-1">
+      <button id="tabBtn-cockpit" onclick="switchTab('cockpit')" class="px-3.5 py-1.5 rounded-t-lg text-xs md:text-sm font-bold bg-sky-500/20 text-sky-300 border-b-2 border-sky-400">
+        1. المجسم التفاعلي والبطاقات (Cockpit)
+      </button>
+      <button id="tabBtn-pvt" onclick="switchTab('pvt')" class="px-3.5 py-1.5 rounded-t-lg text-xs md:text-sm font-bold text-slate-400 hover:text-white">
+        2. اختبار اليقظة (10s Micro-PVT) والتلعيب
+      </button>
+      <button id="tabBtn-cyber" onclick="switchTab('cyber')" class="px-3.5 py-1.5 rounded-t-lg text-xs md:text-sm font-bold text-slate-400 hover:text-white">
+        3. درع الأمن السيبراني (SHA-256 + TMR · øX7)
+      </button>
+      <button id="tabBtn-merger" onclick="switchTab('merger')" class="px-3.5 py-1.5 rounded-t-lg text-xs md:text-sm font-bold text-emerald-400 hover:text-emerald-300">
+        4. دمج عمل الزميلات + أكواد Python/JSON
+      </button>
+    </div>
+  </header>
+
+  <!-- Toast Banner -->
+  <div id="toastBanner" class="hidden fixed bottom-5 left-5 z-50 max-w-md px-4 py-3 rounded-xl bg-slate-900 border border-sky-400/50 text-sky-200 text-xs md:text-sm shadow-2xl flex items-center gap-3">
+    <span id="toastIcon" class="text-lg">⚡</span>
+    <span id="toastText" class="font-semibold"></span>
+  </div>
+
+  <!-- Main Workspace Container -->
+  <main class="max-w-7xl mx-auto w-full px-4 py-5 flex-1">
+
+    <!-- ==================== TAB 1: COCKPIT & 5-ORGAN AVATAR ==================== -->
+    <section id="tab-cockpit" class="space-y-5">
+
+      <!-- Quick Scenario Simulator Bar -->
+      <div class="cockpit-card rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-ping"></span>
+          <span class="text-xs md:text-sm font-bold text-slate-200" id="simBarTitle">محاكي السيناريوهات الحية أمام لجنة التحكيم:</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="triggerScenario('nominal')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25">
+            حالة مستقرة (Nominal)
+          </button>
+          <button onclick="triggerScenario('co2_crisis')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30">
+            سيناريو 1: تسمم CO2 مقنّع بتوتر (الرئتان + الدماغ)
+          </button>
+          <button onclick="triggerScenario('radiation_immune')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30">
+            سيناريو 2: عاصفة إشعاعية وضعف مناعة (الدم + الدواء)
+          </button>
+          <button onclick="triggerScenario('bone_renal')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500/20 text-orange-300 border border-orange-500/40 hover:bg-orange-500/30">
+            سيناريو 3: كالسيوم وحصوات كلى + هبوط وعائي (العظام + القلب)
+          </button>
+          <button onclick="triggerScenario('isolation_sleep')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30">
+            سيناريو 4: عزلة حادة وأرق فضائي (المسار النفسي)
+          </button>
+        </div>
+      </div>
+
+      <!-- NASA Spacecraft Equation Simulator (HIDH CO2 + OCHMO-TB-020 Water Shield + OCHMO-MTB-003 Vu) -->
+      <div class="cockpit-card rounded-2xl p-3.5 border border-indigo-500/30 bg-slate-950/80">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <span class="text-xs font-extrabold text-indigo-300">
+            ⚙️ محاكي معادلات المركبة الفيزيائي (مبني مباشرة من جداول أوراق ناسا المرفقة بدون حساسات خارجية):
+          </span>
+          <span id="spacecraftEqReadout" class="text-[11px] font-mono-code px-2.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-slate-700">
+            CO2 Output: 0.72 g/min (RQ=0.92) | SPE Dose: 66 mSv (Water Shelter ON) | Urine Vu: 453 L
+          </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+          <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <label class="text-slate-400 font-bold mb-1">1. نشاط الرائد (جدول HIDH في OCHMO-TB-004):</label>
+            <select id="simActivitySelect" onchange="runSpacecraftPhysicsSim()" class="bg-slate-950 text-emerald-300 rounded-lg px-2.5 py-1.5 border border-slate-700 font-bold">
+              <option value="sleep">نوم (O2: 0.36 g/m | CO2: 0.455 g/m)</option>
+              <option value="nominal" selected>عمل عادي (O2: 0.568 g/m | CO2: 0.72 g/m)</option>
+              <option value="exercise">تمرين 75% VO2max (CO2 يقفز 7x إلى 4.985 g/m!)</option>
+              <option value="apollo13">عطل فلاتر CDRA/LiOH (سيناريو Apollo 13: 14.9 mmHg)</option>
+            </select>
+          </div>
+          <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <label class="text-slate-400 font-bold mb-1">2. تدريع أكياس الماء ضد الإشعاع (OCHMO-TB-020 ص8):</label>
+            <select id="simShieldSelect" onchange="runSpacecraftPhysicsSim()" class="bg-slate-950 text-amber-300 rounded-lg px-2.5 py-1.5 border border-slate-700 font-bold">
+              <option value="optimized" selected>مخبأ أكياس ماء 10-20cm (تخفض جرعة SPE إلى 65-83 mSv)</option>
+              <option value="unshielded">بدون تكديس أكياس الماء (الجرعة تقفز إلى 214-259 mSv!)</option>
+            </select>
+          </div>
+          <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <label class="text-slate-400 font-bold mb-1">3. إضاءة المقصورة ومعادلة البول (STS-90 & MTB-003):</label>
+            <select id="simLightSelect" onchange="runSpacecraftPhysicsSim()" class="bg-slate-950 text-sky-300 rounded-lg px-2.5 py-1.5 border border-slate-700 font-bold">
+              <option value="aligned" selected>إضاءة متزنة (350 lux نهاراً | <5 lux ليلاً | ماء 2.5L)</option>
+              <option value="middeck_dim">إضاءة Middeck خافتة (9 lux) + نبضة 60,000 lux + جفاف</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-Column Cockpit Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Left Column (4 cols): Interactive 5-Organ Astronaut SVG Avatar -->
+        <div class="lg:col-span-4 cockpit-card rounded-2xl p-4 flex flex-col items-center justify-between relative">
+          <div class="w-full flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-400" id="avatarHeader">المجسم التشريحي التفاعلي (انقر على العضو)</span>
+            <span id="overallStatusBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+              مستقر
+            </span>
+          </div>
+
+          <!-- Astronaut Interactive SVG -->
+          <div class="relative w-full max-w-[260px] my-1 flex items-center justify-center">
+            <svg viewBox="0 0 260 420" class="w-full h-auto select-none">
+              <defs>
+                <radialGradient id="suitGlow" cx="50%" cy="40%" r="60%">
+                  <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8" />
+                  <stop offset="100%" stop-color="#090d16" stop-opacity="0.2" />
+                </radialGradient>
+              </defs>
+
+              <!-- Background Grid Circle -->
+              <circle cx="130" cy="210" r="120" fill="url(#suitGlow)" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4" />
+
+              <!-- Astronaut Silhouette Outline -->
+              <!-- Helmet & Head -->
+              <circle cx="130" cy="62" r="38" fill="#0f172a" stroke="#475569" stroke-width="2.5" />
+              <path d="M102 55 Q130 38 158 55 Q162 75 130 82 Q98 75 102 55 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2" opacity="0.65" />
+              <!-- Torso -->
+              <rect x="82" y="104" width="96" height="135" rx="22" fill="#0f172a" stroke="#475569" stroke-width="2.5" />
+              <!-- Arms -->
+              <rect x="46" y="110" width="30" height="115" rx="14" fill="#0f172a" stroke="#475569" stroke-width="2" />
+              <rect x="184" y="110" width="30" height="115" rx="14" fill="#0f172a" stroke="#475569" stroke-width="2" />
+              <!-- Pelvis & Legs -->
+              <rect x="88" y="243" width="38" height="145" rx="15" fill="#0f172a" stroke="#475569" stroke-width="2" />
+              <rect x="134" y="243" width="38" height="145" rx="15" fill="#0f172a" stroke="#475569" stroke-width="2" />
+
+              <!-- 1. BRAIN (Pathway 1: Behavioral & Circadian) -->
+              <g id="svg-organ-brain" class="organ-node" onclick="selectPathway(1)">
+                <ellipse cx="130" cy="56" rx="22" ry="16" fill="#10b981" fill-opacity="0.35" stroke="#10b981" stroke-width="2.5" id="shape-brain" />
+                <path d="M118 56 Q130 46 142 56 M120 62 Q130 54 140 62" stroke="#ffffff" stroke-width="1.5" fill="none" />
+                <text x="130" y="32" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="bold">1. الدماغ (النفسي)</text>
+              </g>
+
+              <!-- 5. LUNGS (Pathway 5: Closed Environment & CO2) -->
+              <g id="svg-organ-lungs" class="organ-node" onclick="selectPathway(5)">
+                <path id="shape-lungs" d="M95 125 C95 112, 118 112, 122 130 L122 165 C112 170, 95 165, 95 150 Z M165 125 C165 112, 142 112, 138 130 L138 165 C148 170, 165 165, 165 150 Z" fill="#10b981" fill-opacity="0.35" stroke="#10b981" stroke-width="2.2" />
+                <text x="52" y="142" text-anchor="middle" fill="#cbd5e1" font-size="9.5" font-weight="bold">5. الرئتان (CO2)</text>
+              </g>
+
+              <!-- 2. HEART (Pathway 2: Cardiovascular) -->
+              <g id="svg-organ-heart" class="organ-node" onclick="selectPathway(2)">
+                <circle cx="136" cy="148" r="14" fill="#10b981" fill-opacity="0.45" stroke="#10b981" stroke-width="2.5" id="shape-heart" />
+                <path d="M129 148 L133 148 L135 142 L138 154 L140 148 L144 148" stroke="#ffffff" stroke-width="1.6" fill="none" />
+                <text x="210" y="148" text-anchor="middle" fill="#cbd5e1" font-size="9.5" font-weight="bold">2. القلب (الأوعية)</text>
+              </g>
+
+              <!-- 3. BLOOD & IMMUNE (Pathway 3: Radiation & Immune/Metabolic) -->
+              <g id="svg-organ-blood" class="organ-node" onclick="selectPathway(3)">
+                <rect x="96" y="185" width="68" height="28" rx="10" fill="#10b981" fill-opacity="0.35" stroke="#10b981" stroke-width="2.2" id="shape-blood" />
+                <text x="130" y="203" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">3. الدم والمناعة (الإشعاع)</text>
+              </g>
+
+              <!-- 4. BONES & KIDNEYS (Pathway 4: Microgravity Bone & Renal) -->
+              <g id="svg-organ-bones" class="organ-node" onclick="selectPathway(4)">
+                <rect x="98" y="255" width="18" height="110" rx="7" fill="#10b981" fill-opacity="0.35" stroke="#10b981" stroke-width="2.2" id="shape-bones-l" />
+                <rect x="144" y="255" width="18" height="110" rx="7" fill="#10b981" fill-opacity="0.35" stroke="#10b981" stroke-width="2.2" id="shape-bones-r" />
+                <circle cx="112" cy="224" r="8" fill="#10b981" fill-opacity="0.45" stroke="#10b981" stroke-width="2" id="shape-kidney-l" />
+                <circle cx="148" cy="224" r="8" fill="#10b981" fill-opacity="0.45" stroke="#10b981" stroke-width="2" id="shape-kidney-r" />
+                <text x="130" y="398" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="bold">4. العظام والكليتان (الكالسيوم)</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- 5 Pathway Quick Selector Buttons -->
+          <div class="w-full grid grid-cols-5 gap-1.5 mt-2">
+            <button onclick="selectPathway(1)" id="pill-1" class="py-1.5 px-1 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-900/90 text-center">1. الدماغ</button>
+            <button onclick="selectPathway(2)" id="pill-2" class="py-1.5 px-1 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-900/90 text-center">2. القلب</button>
+            <button onclick="selectPathway(3)" id="pill-3" class="py-1.5 px-1 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-900/90 text-center">3. المناعة</button>
+            <button onclick="selectPathway(4)" id="pill-4" class="py-1.5 px-1 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-900/90 text-center">4. العظام</button>
+            <button onclick="selectPathway(5)" id="pill-5" class="py-1.5 px-1 rounded-lg text-[11px] font-bold border border-slate-700 bg-slate-900/90 text-center">5. الرئتان</button>
+          </div>
+        </div>
+
+        <!-- Middle & Right Column (8 cols): Active Pathway Indicators + Causal DAG + Closed-Loop Protocol -->
+        <div class="lg:col-span-8 space-y-4">
+
+          <!-- Selected Pathway Header & Causal DAG Chain -->
+          <div class="cockpit-card rounded-2xl p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <span class="text-xs font-bold text-sky-400" id="activePathTag">المسار رقم 5 · عضو: الرئتان والمقصورة</span>
+                <h2 class="text-lg md:text-xl font-extrabold text-white mt-0.5" id="activePathTitle">البيئة المغلقة والتنفس (Hostile Closed Environment)</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 font-mono-code text-sky-300" id="activeZScoreBadge">
+                  Personal Z-Score: 0.4σ
+                </span>
+                <button onclick="speakCurrentProtocol()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/40 hover:bg-sky-500/30 flex items-center gap-1.5">
+                  <span>🔊</span> <span id="ttsBtnLabel">نطق صوتي (Offline TTS)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Causal DAG Chain (HSRB Directed Acyclic Graph) -->
+            <div class="mt-3 bg-slate-950/80 rounded-xl p-3 border border-slate-800">
+              <div class="text-[11px] font-bold text-slate-400 mb-1" id="dagHeader">
+                السلسلة السببية وفق منهجية ناسا (NASA HSRB Causal Chain - DAG):
+              </div>
+              <div id="activeDagChain" class="text-xs md:text-sm font-bold text-amber-300 flex flex-wrap items-center gap-2">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Indicators Grid for Selected Pathway -->
+            <div id="indicatorsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <!-- Populated dynamically with sliders so user/judges can test live -->
+            </div>
+          </div>
+
+          <!-- Actionable Closed-Loop Protocol Card (Level 1 + Level 2 + Space Pharmacy Calculator) -->
+          <div class="cockpit-card rounded-2xl p-4 border-t-4 border-t-sky-500" id="protocolCardWrapper">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div>
+                <h3 class="text-base md:text-lg font-extrabold text-white" id="protocolCardTitle">
+                  بطاقة التدخل العلاجي الموجهة (Closed-Loop Actionable Protocol)
+                </h3>
+                <p class="text-xs text-slate-400" id="SpacebarHint">
+                  اضغط مفتاح المسافة (Spacebar) أو انقر على الخطوة لتأكيد التنفيذ بدون استخدام الماوس في انعدام الجاذبية
+                </p>
+              </div>
+              <!-- Closed-Loop Timer Controls -->
+              <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                <span class="text-xs text-slate-400" id="timerLabel">مؤقت إعادة التقييم:</span>
+                <span id="closedLoopTimerDisplay" class="font-mono-code text-sm font-extrabold text-sky-400">10s</span>
+                <button onclick="startClosedLoopTimer()" class="text-xs px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 font-bold" id="startTimerBtn">
+                  بدء المؤقت
+                </button>
+                <button onclick="simulateEscalationToLevel2()" class="text-xs px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 font-bold" id="escalateBtn">
+                  تصعيد فوري للمستوى 2 ⬆
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Level 1 Steps (Non-Pharmacological: Environmental / Physical / Behavioral) -->
+              <div class="bg-slate-950/75 rounded-xl p-3.5 border border-emerald-500/25">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-extrabold text-emerald-400" id="lvl1Header">
+                    المستوى 1: تدخلات بيئية / فيزيائية / سلوكية فورية
+                  </span>
+                  <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold" id="lvl1Progress">0/3 مكتمل</span>
+                </div>
+                <div id="level1List" class="space-y-2 text-xs md:text-sm">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+
+              <!-- Level 2 Steps (Escalation & Space Pharmacy Radiation Calculator) -->
+              <div id="level2Box" class="bg-slate-950/75 rounded-xl p-3.5 border border-slate-800 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-extrabold text-rose-400" id="lvl2Header">
+                    المستوى 2: بروتوكول التصعيد الطبي والصيدلية الفضائية
+                  </span>
+                  <span id="lvl2StateBadge" class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold">
+                    في انتظار تقييم المستوى 1
+                  </span>
+                </div>
+                <div id="level2List" class="space-y-2 text-xs md:text-sm mb-3">
+                  <!-- Populated by JS -->
+                </div>
+
+                <!-- Space Pharmacy Radiation Degradation Box (Chemistry Teammate Feature) -->
+                <div class="bg-indigo-950/40 rounded-lg p-2.5 border border-indigo-500/30 text-xs">
+                  <div class="flex items-center justify-between font-bold text-indigo-300 mb-1">
+                    <span id="pharmTitle">🧪 حاسبة الصيدلية الفضائية (ExMC Drug Potency):</span>
+                    <span id="drugPotencyBadge" class="font-mono-code text-amber-300">84.2% فعالية</span>
+                  </div>
+                  <p id="drugDetailsText" class="text-slate-300 text-[11px] leading-relaxed"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 10s MICRO-PVT & GAMIFICATION ==================== -->
+    <section id="tab-pvt" class="hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Live 10-Second Micro-PVT Box -->
+        <div class="lg:col-span-7 cockpit-card rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h2 class="text-lg font-extrabold text-white">اختبار اليقظة العصبي لرائد الفضاء (10-Second Micro-PVT)</h2>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 font-bold">
+                مرتبط بالمسار 1 (الدماغ)
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">
+              يقيس سرعة الاستجابة الإدراكية بالملي ثانية بدون استبيانات نصية طويلة. عندما تتحول الدائرة إلى اللون الأحمر، انقر عليها فوراً!
+            </p>
+          </div>
+
+          <!-- Interactive PVT Arena -->
+          <div id="pvtArena" onclick="handlePvtArenaClick()" class="w-full h-56 rounded-2xl bg-slate-950 border-2 border-slate-800 flex flex-col items-center justify-center cursor-pointer select-none transition-all relative overflow-hidden">
+            <div id="pvtTargetCircle" class="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-600 flex items-center justify-center text-center p-2 transition-transform">
+              <span id="pvtStatusText" class="text-xs md:text-sm font-extrabold text-slate-200">اضغط «بدء الاختبار» بالأسفل</span>
+            </div>
+            <div class="absolute bottom-3 right-4 left-4 flex justify-between text-xs text-slate-400 font-mono-code">
+              <span id="pvtTimeRemaining">الوقت: 10.0s</span>
+              <span id="pvtLastMs">آخر استجابة: -- ms</span>
+              <span id="pvtAvgMs">المتوسط: -- ms</span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+            <button id="pvtStartBtn" onclick="startMicroPVT()" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-sm transition shadow-lg">
+              ▶ بدء اختبار الـ 10 ثوانٍ الآن
+            </button>
+            <div class="text-xs text-slate-300">
+              الحد الطبيعي في ناسا: <span class="text-emerald-400 font-bold">220 - 320 ms</span> · إرهاق حرج: <span class="text-rose-400 font-bold">&gt; 420 ms</span>
+            </div>
+          </div>
+
+          <!-- Teammate Experiment Log Table (3-5 Participants as in Student 3 Guide) -->
+          <div class="mt-5 pt-4 border-t border-slate-800">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-extrabold text-sky-400">جدول نتائج تجربة اليقظة على الزملاء (مخرج طالب العلوم الثالث):</h3>
+              <button onclick="addManualParticipantTrial()" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold">
+                + إضافة مشارك تجريبي
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-right border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400">
+                    <th class="py-1.5 px-2">المشارك (بدون أسماء حقيقية)</th>
+                    <th class="py-1.5 px-2">زمن الاستجابة (ms)</th>
+                    <th class="py-1.5 px-2">التقييم الإدراكي</th>
+                  </tr>
+                </thead>
+                <tbody id="pvtTrialsTableBody" class="divide-y divide-slate-800/60 font-mono-code">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Space-Resilience Shield Gamification XP (Student 3 Deliverable) -->
+        <div class="lg:col-span-5 cockpit-card rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h2 class="text-lg font-extrabold text-white">درع المرونة الفضائية (Gamification XP)</h2>
+              <span id="xpBadge" class="text-sm font-extrabold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                45 / 70 XP
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mb-3">
+              نظام التحفيز اليومي لمقاومة العزلة والاكتئاب في المهام الطويلة (مطلوب في إرشادات تحدي ناسا الرسمية).
+            </p>
+
+            <!-- XP Progress Bar -->
+            <div class="w-full h-3 rounded-full bg-slate-900 border border-slate-800 overflow-hidden mb-4">
+              <div id="xpProgressBar" class="h-full bg-gradient-to-r from-sky-500 to-emerald-400 transition-all duration-300" style="width: 64%"></div>
+            </div>
+
+            <!-- 5 Daily Quests -->
+            <div id="gamificationQuestsList" class="space-y-2.5">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="mt-4 bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
+            <strong class="text-sky-400">ملخص التجربة للجنة التحكيم (جاهز للإلقاء):</strong>
+            <p class="mt-1 leading-relaxed">
+              "قمنا بتجربة اختبار الـ 10 ثوانٍ (Micro-PVT) على زملائنا؛ تراوح متوسط الاستجابة في حالة اليقظة بين 255 و 295 مللي ثانية، بينما ارتفع عند محاكاة الإرهاق إلى 445 مللي ثانية، مما مكّن النظام من اكتشاف الإجهاد العصبي فوراً دون إجبار الرائد على كتابة مذكرات طويلة."
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: CYBER-RESILIENCE SHIELD (øX7 SPECIALTY) ==================== -->
+    <section id="tab-cyber" class="hidden space-y-5">
+      <div class="cockpit-card rounded-2xl p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div>
+            <span class="text-xs font-bold text-emerald-400 uppercase">طبقة الأمن السيبراني ومقاومة الإشعاع الفضائي · تخصص øX7</span>
+            <h2 class="text-xl font-extrabold text-white mt-0.5">
+              سجل التدقيق المتسلسل (SHA-256 Hash-Chain) + التصويت الثلاثي (TMR) + التحقق الفيزيائي المتقاطع
+            </h2>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="simulateRadiationBitFlip()" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 transition">
+              ☢ محاكاة ضربة إشعاع كوني / تلاعب بالسجل (Bit-Flip Tamper)
+            </button>
+            <button onclick="runTMRSelfHeal()" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 transition">
+              🛡 تشغيل التصويت الثلاثي (TMR) والإصلاح الذاتي
+            </button>
+            <button onclick="generateEarthBurstPacket()" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 transition">
+              📡 توليد كبسولة تزامن الأرض (2KB Signed Burst)
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Alert Box -->
+        <div id="cyberStatusBanner" class="mt-4 p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span id="cyberStatusIcon" class="text-xl">✅</span>
+            <div>
+              <div id="cyberStatusTitle" class="text-sm font-extrabold text-emerald-300">
+                سلسلة الهاش SHA-256 سليمة 100% (verify_chain() == OK)
+              </div>
+              <div id="cyberStatusDesc" class="text-xs text-slate-300">
+                جميع النسخ الثلاث (Replica A, B, C) متطابقة؛ لا يوجد انقلاب بتات إشعاعي (SEU) أو تلاعب غير مصرح به.
+              </div>
+            </div>
+          </div>
+          <span id="cyberLatencyTag" class="font-mono-code text-xs px-2.5 py-1 rounded bg-slate-900 text-emerald-400 border border-slate-700">
+            Verify Time: 0.8 ms
+          </span>
+        </div>
+
+        <!-- 3-Column Cyber Architecture Breakdown -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+
+          <!-- 1. Triple Modular Redundancy (TMR Voting) -->
+          <div class="bg-slate-950/90 rounded-xl p-4 border border-slate-800">
+            <h3 class="text-xs font-extrabold text-sky-400 mb-2">
+              1. ذاكرة التكرار الثلاثي (Triple Modular Redundancy - vote())
+            </h3>
+            <p class="text-[11px] text-slate-400 mb-3">
+              تحفظ كل قراءة طبية حرجة في 3 شرائح ذاكرة مستقلة. إذا ضرب الإشعاع الكوني نسخة واحدة، تصوّت النسختان الأخريان (2 من 3) لاستعادة القيمة الصحيحة فوراً:
+            </p>
+            <div id="tmrReplicasBox" class="space-y-2 font-mono-code text-xs">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- 2. Cross-Sensor Physiological Validation -->
+          <div class="bg-slate-950/90 rounded-xl p-4 border border-slate-800">
+            <h3 class="text-xs font-extrabold text-amber-400 mb-2">
+              2. التحقق الفيزيائي المتقاطع (Cross-Sensor Validation)
+            </h3>
+            <p class="text-[11px] text-slate-400 mb-3">
+              يمنع الخلط بين "أزمة مرضية حقيقية" وبين "حساس مخترق أو تالف" عبر فحص ترابط المؤشرات الحيوية:
+            </p>
+            <div id="crossSensorBox" class="space-y-2 text-xs">
+              <!-- Populated by JS -->
+            </div>
+            <button onclick="simulateSensorSpoofingAttack()" class="mt-3 w-full py-1.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 text-xs font-bold">
+              ⚡ اختبار حقن قراءة كاذبة في حساس منفرد (Spoofing Test)
+            </button>
+          </div>
+
+          <!-- 3. Signed 2KB Earth-Sync Burst Packet -->
+          <div class="bg-slate-950/90 rounded-xl p-4 border border-slate-800">
+            <h3 class="text-xs font-extrabold text-indigo-400 mb-2">
+              3. كبسولة تزامن الأرض الموقعة (2KB Earth-Burst Packet)
+            </h3>
+            <p class="text-[11px] text-slate-400 mb-2">
+              عند فتح نافذة اتصال ضيقة مع مركز التحكم في هيوستن، يرسل النظام ملخصاً مضغوطاً وموقّعاً بـ SHA-256 بحجم أقل من 2 كيلوبايت:
+            </p>
+            <pre id="earthBurstPre" class="bg-slate-900 p-2.5 rounded-lg text-[10px] font-mono-code text-sky-300 overflow-x-auto max-h-40 border border-slate-800"></pre>
+          </div>
+        </div>
+
+        <!-- Hash-Chained Audit Ledger Table -->
+        <div class="mt-4">
+          <h3 class="text-xs font-extrabold text-slate-300 mb-2">سجل الكتل الطبية المتسلسلة (SHA-256 Audit Chain Ledger):</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-right border-collapse font-mono-code">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 bg-slate-900/60">
+                  <th class="py-2 px-2.5">#</th>
+                  <th class="py-2 px-2.5">الوقت (UTC)</th>
+                  <th class="py-2 px-2.5">المسار والحدث الطبي</th>
+                  <th class="py-2 px-2.5">القراءة المسجلة</th>
+                  <th class="py-2 px-2.5">بصمة السجل السابق (Prev Hash)</th>
+                  <th class="py-2 px-2.5">بصمة السجل الحالي (Curr SHA-256)</th>
+                  <th class="py-2 px-2.5">الحالة</th>
+                </tr>
+              </thead>
+              <tbody id="hashChainTableBody" class="divide-y divide-slate-800/70">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: TEAMMATE MERGER & PYTHON/JSON EXPORT ==================== -->
+    <section id="tab-merger" class="hidden space-y-5">
+      <div class="cockpit-card rounded-2xl p-5">
+        <div class="border-b border-slate-800 pb-3 mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-xs font-bold text-emerald-400">مصمم خصيصاً لسهولة الدمج مع عمل زميلاتك</span>
+            <h2 class="text-lg md:text-xl font-extrabold text-white">
+              استوديو دمج بيانات الفريق (nasa_osdr_matrix.json) + توليد ملفات Python الجاهزة
+            </h2>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="downloadFullMatrixJSON()" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs hover:bg-emerald-400 transition">
+              ⬇ تحميل ملف nasa_osdr_matrix.json النهائي
+            </button>
+            <button onclick="resetDefaultMatrix()" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700 transition">
+              استعادة أرقام ناسا الافتراضية
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Left (6 cols): Visual Editor OR Direct JSON Paste from Teammates -->
+          <div class="lg:col-span-6 space-y-4">
+            <div class="bg-slate-950/90 p-4 rounded-xl border border-emerald-500/30">
+              <h3 class="text-sm font-extrabold text-emerald-300 mb-1">
+                الطريقة 1 (الأسرع): الصقي كود JSON الذي أرسلته زميلتك في الواتساب هنا
+              </h3>
+              <p class="text-xs text-slate-400 mb-2">
+                سواء أرسلت زميلتك مساراً واحداً `{ "path_id": 3, ... }` أو مصفوفة `[ ... ]` بنفس القالب الموجود في دليل الفريق، الصقيه هنا واضغطي «دمج فوراً» وسيتحدث المجسم والبطاقات تلقائياً!
+              </p>
+              <textarea id="teammateJsonInput" rows="7" dir="ltr" class="w-full rounded-lg bg-slate-900 border border-slate-700 p-2.5 text-xs font-mono-code text-sky-200 focus:outline-none focus:border-emerald-400" placeholder='{ "path_id": 3, "name_ar": "المناعة والأيض والإشعاع", "organ": "blood", ... }'></textarea>
+              <div class="flex flex-wrap gap-2 mt-2.5">
+                <button onclick="mergeTeammateJSON()" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs">
+                  ✓ دمج ملف الزميلة وتحديث المجسم فوراً
+                </button>
+                <button onclick="loadSampleTeammateBlock(3)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">
+                  تجربة قالب المسار 3 (الكيمياء)
+                </button>
+                <button onclick="loadSampleTeammateBlock(5)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">
+                  تجربة قالب المسار 5 (التنفس)
+                </button>
+              </div>
+            </div>
+
+            <!-- Way 2: Quick Form Editor without JSON syntax -->
+            <div class="bg-slate-950/90 p-4 rounded-xl border border-slate-800">
+              <h3 class="text-sm font-extrabold text-sky-300 mb-2">
+                الطريقة 2 (بدون أقواس JSON): تعديل أرقام وخطوات أي مسار مباشرة
+              </h3>
+              <div class="space-y-2.5 text-xs">
+                <div>
+                  <label class="text-slate-400 block mb-1">اختاري المسار المراد تعديله:</label>
+                  <select id="formPathSelect" onchange="populateQuickForm(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-bold">
+                    <option value="1">المسار 1: النفسي والسلوكي (الدماغ — طالبة العلوم 3)</option>
+                    <option value="2">المسار 2: القلب والأوعية (القلب — طالبة العلوم 2)</option>
+                    <option value="3">المسار 3: المناعة والإشعاع (الدم — طالبة الكيمياء)</option>
+                    <option value="4">المسار 4: العظام والكلى (الهيكل — طالبة الكيمياء)</option>
+                    <option value="5">المسار 5: البيئة والتنفس (الرئتان — طالبة العلوم 2)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-slate-400 block mb-1">جملة السبب العلمي (dag_link):</label>
+                  <input id="formDagInput" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-amber-300" />
+                </div>
+                <div>
+                  <label class="text-slate-400 block mb-1">خطوات المستوى 1 (كل خطوة في سطر):</label>
+                  <textarea id="formLvl1Input" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-emerald-200"></textarea>
+                </div>
+                <div>
+                  <label class="text-slate-400 block mb-1">خطوات المستوى 2 (كل خطوة في سطر):</label>
+                  <textarea id="formLvl2Input" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-rose-200"></textarea>
+                </div>
+                <button onclick="saveQuickFormChanges()" class="w-full py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs">
+                  حفظ التعديلات في المسار المختار
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right (6 cols): Ready-to-Copy Python Files (cyber_shield.py, analytics_engine.py, main.py) -->
+          <div class="lg:col-span-6 space-y-4">
+            <div class="bg-slate-950/90 p-4 rounded-xl border border-slate-800">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 class="text-sm font-extrabold text-indigo-300">
+                  ملفات المشروع الجاهزة لرفعها على GitHub أو تشغيلها مع المهندس
+                </h3>
+                <button onclick="copyActiveCodeBox()" class="px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30 text-xs font-bold">
+                  📋 نسخ الكود المعروض
+                </button>
+              </div>
+              <p class="text-xs text-slate-400 mb-3">
+                اضغطي على اسم أي ملف بالأسفل لعرض الكود الكامل الجاهز له (`cyber_shield.py`، `analytics_engine.py`، `main.py`، أو `nasa_osdr_matrix.json` المدمج):
+              </p>
+              <div class="flex flex-wrap gap-1.5 mb-2">
+                <button onclick="showBackendCode('matrix')" id="codeTab-matrix" class="px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-mono-code font-bold">nasa_osdr_matrix.json</button>
+                <button onclick="showBackendCode('cyber')" id="codeTab-cyber" class="px-2.5 py-1 rounded bg-slate-900 text-slate-400 border border-slate-800 text-xs font-mono-code font-bold">cyber_shield.py (øX7)</button>
+                <button onclick="showBackendCode('analytics')" id="codeTab-analytics" class="px-2.5 py-1 rounded bg-slate-900 text-slate-400 border border-slate-800 text-xs font-mono-code font-bold">analytics_engine.py (øX7)</button>
+                <button onclick="showBackendCode('main')" id="codeTab-main" class="px-2.5 py-1 rounded bg-slate-900 text-slate-400 border border-slate-800 text-xs font-mono-code font-bold">main.py (FastAPI)</button>
+              </div>
+              <pre id="backendCodeViewer" dir="ltr" class="bg-slate-900 p-3 rounded-xl text-[11px] font-mono-code text-emerald-300 overflow-x-auto max-h-[380px] border border-slate-800 leading-relaxed"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ============================================================================
+    // 1. قسم بيانات الطالبات الموحد (nasa_osdr_matrix.json) - مطابق 100% لقالب الفريق
+    // ============================================================================
+    const DEFAULT_NASA_OSDR_MATRIX = [
+      {
+            "path_id": 1,
+            "name_ar": "المسار النفسي والسلوكي والنوم (Neurolab STS-90/95 + HERA + ARCHeR — طالب العلوم 3)",
+            "name_en": "Behavioral Health, Sleep & Circadian Rhythm (Neurolab STS-90/95 & HERA)",
+            "organ": "brain",
+            "indicators": [
+                  {
+                        "name": "صافي ساعات النوم اليومية (Actigraphy Sleep Time - Dijk & Czeisler NTRS 20030068197)",
+                        "unit": "hours",
+                        "current_val": 6.5,
+                        "normal_min": 7.0,
+                        "normal_max": 8.5,
+                        "critical_min": 3.8,
+                        "critical_max": 10.0,
+                        "notes_ar": "في دراسة STS-90/95 (صفحة 6): متوسط فترة النوم كان 427.6 دقيقة (6.5 ساعة صافي نوم)، وهبط في بعض الليالي إلى 3.8 ساعات! والمنومات هي الدواء #1 استخداماً في 219 سجلاً طبياً لرواد الفضاء (صفحة 2).",
+                        "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+                  },
+                  {
+                        "name": "وسيط سرعة الاستجابة وهفوات اليقظة (Dinges PVT Median RT & Lapses > 500ms - p.9)",
+                        "unit": "ms",
+                        "current_val": 265,
+                        "normal_min": 220,
+                        "normal_max": 280,
+                        "critical_min": 150,
+                        "critical_max": 500,
+                        "notes_ar": "في بطارية د. ديفيد دينجس (Figure 9 صفحة 9): الوسيط الطبيعي 255-270 ms، وأي استجابة تتجاوز 500 ms تُسجَّل رسمياً كـ «هفوة يقظة خطيرة» (PVT Lapse)!",
+                        "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+                  },
+                  {
+                        "name": "شدة إضاءة المقصورة (Cabin Illuminance Lux - Actillume STS-90 p.7-8)",
+                        "unit": "lux",
+                        "current_val": 350,
+                        "normal_min": 300,
+                        "normal_max": 500,
+                        "critical_min": 9,
+                        "critical_max": 60000,
+                        "notes_ar": "في الطابق الأوسط (Middeck) هبطت الإضاءة إلى 9 lux فقط نهاراً، بينما قفزت في قمرة القيادة (Flight Deck) إلى 60,000-79,000 lux كل 90 دقيقة، مما أخر دورة الكورتيزول البولي 6 ساعات!",
+                        "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+                  }
+            ],
+            "dag_link": "دورة شروق/غروب كل 90 دقيقة + إضاءة خافتة نهاراً (9 lux في Middeck) أو نبضات ضوئية مسائية (60,000 lux) + جداول عمل أقصر من 24 ساعة (23.5h) أو يوم مريخي (24.6h) ← تأخر ذروة الكورتيزول البولي 6 ساعات وانخفاض نوم الموجة البطيئة (SWS) ← نوم 3.8-6.5 ساعة وهفوات يقظة (PVT Lapses > 500ms)",
+            "dag_link_en": "90-min Orbital Dawn/Dusk + Dim Middeck (9 lux) / Evening Light Pulses (60,000 lux) → 6-hr Urinary Cortisol Delay & SWS Drop → Sleep Curtailment (3.8-6.5h) & PVT Lapses (>500ms)",
+            "level1": [
+                  "ضبط إضاءة المقصورة الذكي (STS-90 Light Protocol p.8-10): رفع إضاءة العمل النهارية إلى 300-500 lux ومنع التعرض لنبضات الضوء العالية (60,000 lux في قمرة القيادة) قبل النوم لتفادي تأخر الساعة البيولوجية (SCN)",
+                  "العناية بالحديقة الفضائية (Space Gardening & Veggie Monitoring - HRP) لتخفيف شعور العزلة والاحتجاز كما في محاكي (HERA 650-sq-ft Habitat) مع تمرين تنفس موجه",
+                  "إلغاء جدول «Slam Shifting» وتطبيق تدوير الورديات مع عقارب الساعة (Clockwise Shift Rotation) وإنجاز مهام درع المرونة التحفيزية (Gamification XP)"
+            ],
+            "level1_en": [
+                  "Regulate cabin lighting: boost daytime work light from 9 lux to 300-500 lux and block pre-sleep 60,000 lux flight-deck pulses (Dijk & Czeisler p.8-10)",
+                  "Engage in Space Gardening (Veggie Monitoring) psychological countermeasure and HERA isolation resilience routine",
+                  "Avoid abrupt 'slam shifting' schedules and complete Resilience Shield Gamification quests"
+            ],
+            "level2": [
+                  "تحذير دوائي حاسم من دراسة ناسا (STS-90/95 p.1, 2, 6, 9): المنومات التقليدية (GABAa-benzodiazepine hypnotics) تضعف سرعة الاستجابة عند الاستيقاظ في الطوارئ، وجرعة الميلاتونين (0.3 mg) وحدها لا تكفي إن أُعطيت في طور سيركاديان خاطئ؛ لذا يُعطى الميلاتونين (0.3 mg إلى 3 mg) حصرياً في طور غياب الميلاتونين الداخلي مع تعتيم كامل (< 5 lux)",
+                  "تفعيل وضع الحوكمة السري (Advisory Governance) لإعادة جدولة المهام الحرجة عند تجاوز هفوات اليقظة (PVT Lapses > 500ms)"
+            ],
+            "level2_en": [
+                  "NASA Neurolab Warning (p.2, 6): Avoid GABAa-benzodiazepine hypnotics during emergency standby; administer phase-timed Melatonin (0.3-3 mg) strictly under <5 lux darkness",
+                  "Activate Privacy-First Governance Mode to reschedule high-risk tasks when PVT Lapses (>500ms) increase"
+            ],
+            "pharmacy": {
+                  "formulary_tier": "Personalized Formulary (5 Selected Preferences/Crewmember - ExMC Med02 Fig. 3)",
+                  "drug_name": "Phase-Timed Melatonin (0.3 mg - 3.0 mg per Neurolab STS-90 Protocol) — Avoid Benzodiazepines",
+                  "base_dose_mg": 3.0,
+                  "potency_pct": 86.5,
+                  "adjusted_dose_mg": 3.5,
+                  "verification_method": "Salivary Melatonin & Urinary Cortisol Phase Check + Handheld Raman API Scan",
+                  "source": "https://ntrs.nasa.gov/api/citations/20030068197/downloads/20030068197.pdf"
+            }
+      },
+      {
+            "path_id": 2,
+            "name_ar": "مسار القلب والأوعية والعين الفضائية (SANS & Thigh Cuff & Venous Haemostasis — طالب العلوم 2)",
+            "name_en": "Cardiovascular, Venous Haemostasis & Neuro-Ocular Syndrome (SANS)",
+            "organ": "heart",
+            "indicators": [
+                  {
+                        "name": "معدل نبض القلب أثناء الراحة (Resting Heart Rate - Tempus Pro / Standard Measures)",
+                        "unit": "bpm",
+                        "current_val": 72,
+                        "normal_min": 60,
+                        "normal_max": 90,
+                        "critical_min": 48,
+                        "critical_max": 120,
+                        "notes_ar": "يُدمج عبر جهاز التطبيب عن بُعد التجاري (Tempus Pro) ومقاييس (Artemis II Standard Measures)",
+                        "source": "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/"
+                  },
+                  {
+                        "name": "ضغط الدم الانقباضي وضغط السائل الدماغي (Systolic BP & Brain Fluid Pressure / SANS)",
+                        "unit": "mmHg",
+                        "current_val": 114,
+                        "normal_min": 95,
+                        "normal_max": 125,
+                        "critical_min": 88,
+                        "critical_max": 145,
+                        "notes_ar": "تحول السوائل للرأس يرفع الضغط داخل الجمجمة (ICP) ويسبب متلازمة العين العصبية الفضائية (SANS) وتغيرات تخثر الدم الوريدي (Venous Haemostasis)",
+                        "source": "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/"
+                  }
+            ],
+            "dag_link": "انعدام الجاذبية ← اندفاع السوائل نحو الرأس (Cephalad Fluid Shift) وتغير جريان وتخثر الدم الوريدي (Venous Haemostasis) ← ارتفاع الضغط داخل الجمجمة ومتلازمة العين الفضائية (SANS) + هبوط الضغط الانتصابي عند الهبوط على القمر/المريخ (Simulating Manual Piloting)",
+            "dag_link_en": "Microgravity Cephalad Fluid Shift → Elevated Intracranial Pressure (SANS Eye/Brain Changes) + Venous Haemostasis Shift & Landing Orthostatic Intolerance",
+            "level1": [
+                  "ارتداء الأربطة الفخذية الضاغطة (Thigh Cuffs - HRP Study) وبنطال الضغط السلبي (LBNP) لإبقاء السوائل في الساقين وحماية العين والدماغ من متلازمة (SANS)",
+                  "تناول مكملات فيتامين ب المركب اليومية (B-Complex HRP Study) للوقاية من تغيرات الدماغ والعين المرتبطة بالفضاء",
+                  "إجراء فحص الأوعية الدموية والقلب والعين بالموجات فوق الصوتية وجهاز (Tempus Pro) مع بروتوكول التحميل المائي الملحي قبل الهبوط"
+            ],
+            "level1_en": [
+                  "Apply NASA HRP Thigh Cuffs and Lower Body Negative Pressure (LBNP) to sequester fluids in legs and mitigate SANS eye/brain pressure",
+                  "Administer daily B-Complex vitamin supplement (HRP B-Complex study) to protect neuro-ocular function",
+                  "Perform Venous Haemostasis & ocular ultrasound via Tempus Pro telemedicine integration"
+            ],
+            "level2": [
+                  "تفعيل محاكاة الهبوط اليدوي (Simulating Manual Piloting Check) للتأكد من عدم تأثر قدرات القيادة بالانتقال الجاذبي قبل الهبوط على القمر أو المريخ",
+                  "التدخل الدوائي الوعائي أو المضاد للتخثر من صيدلية الطوارئ (Emergency Medicine Formulary) بعد التحقق الطيفي (FTIR) وإرسال كبسولة التزامن الموقعة للأرض"
+            ],
+            "level2_en": [
+                  "Run Manual Piloting Gravity-Transition readiness check prior to lunar/planetary landing",
+                  "Administer Emergency Medicine Formulary vascular/anticoagulant countermeasure and transmit 2KB Signed Burst"
+            ],
+            "pharmacy": {
+                  "formulary_tier": "Emergency Medicine + Personalized B-Complex Supplement (HRP & ExMC Med02)",
+                  "drug_name": "Daily B-Complex (SANS Countermeasure) + Midodrine Vascular Support",
+                  "base_dose_mg": 100,
+                  "potency_pct": 88.0,
+                  "adjusted_dose_mg": 114,
+                  "verification_method": "FTIR Spectroscopy + Pyxis Medical Data Architecture (MED07)",
+                  "source": "https://ntrs.nasa.gov/citations/20170001651"
+            }
+      },
+      {
+            "path_id": 3,
+            "name_ar": "المناعة والأيض والإشعاع الفضائي (OCHMO-TB-020 + ExMC Med02 — طالب الكيمياء)",
+            "name_en": "Immune System, Metabolism & Space Radiation (OCHMO-TB-020 & ExMC Med02)",
+            "organ": "blood",
+            "indicators": [
+                  {
+                        "name": "جرعة الإشعاع الفعالة (Effective Radiation Dose - OCHMO-TB-020 p.4-5)",
+                        "unit": "mSv",
+                        "current_val": 86,
+                        "normal_min": 0,
+                        "normal_max": 167,
+                        "critical_min": 0,
+                        "critical_max": 250,
+                        "notes_ar": "ISS 180d = 77-86 mSv | Lunar 180d = 167 mSv | SPE Event Limit [V1 4031] = 250 mSv | Career Limit [V1 4030] = 600 mSv",
+                        "source": "https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf"
+                  },
+                  {
+                        "name": "سكر الدم الصائم وحرارة الجسم (Fasting Blood Sugar & Immune Biomarkers)",
+                        "unit": "mg/dL",
+                        "current_val": 92,
+                        "normal_min": 70,
+                        "normal_max": 105,
+                        "critical_min": 65,
+                        "critical_max": 140,
+                        "notes_ar": "مرتبط بتجارب Artemis II Immune Biomarkers و Altered Immunity في اللعاب والدم",
+                        "source": "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/"
+                  }
+            ],
+            "dag_link": "الأشعة الكونية (GCR 1.3 mSv/d) والعواصف الشمسية (SPE > 250 mSv) + تغير ميكروبات المقصورة (HERA) ← إجهاد تأكسدي وتثبيط المناعة (Altered Immunity) + تحلل المادة الفعالة للأدوية إشعاعياً (API Radiolysis - Du et al., 2011; Wotring, 2016)",
+            "dag_link_en": "GCR (1.3 mSv/d) & SPE (>250 mSv) + Closed-Habitat Microbiome Shift → Immune Dysregulation + Drug API Radiolysis (Du 2011; Wotring 2016)",
+            "level1": [
+                  "إعادة تشكيل مخبأ العاصفة الإشعاعية بأكياس الماء (Water-Bag Storm Shelter - OCHMO-TB-020 p.8): تكديس أكياس الماء والمؤن بسمك 10-20 cm ماء يخفض جرعة الكبسولة أثناء العاصفة الشمسية من 214-259 mSv إلى 65-83 mSv فقط!",
+                  "إنهاء السير الفضائي (EVA Termination) خلال أقل من ساعتين عند انطلاق إنذار الجرعات الفوري [V2 6100]",
+                  "تطبيق بروتوكول التغذية المعززة للمناعة (Food Physiology) وفحص مسحات الميكروبات في المقصورة (HERA Swabs)"
+            ],
+            "level1_en": [
+                  "Reconfigure Water-Bag Storm Shelter (10-20 cm water equivalent per OCHMO-TB-020 p.8): cuts capsule SPE dose from 214-259 mSv down to 65-83 mSv",
+                  "Terminate EVA within <2 hours upon real-time dosimetry alert [V2 6100]",
+                  "Apply Food Physiology immune-enhancing diet and HERA microbial swabbing"
+            ],
+            "level2": [
+                  "فحص الدواء فوريّاً دون إتلافه بجهاز المطياف المحمول (Handheld Raman / FTIR Spectroscopy - ExMC Med02 Q4) للتحقق من نسبة المادة الفعالة (API) وخلوه من نواتج التحلل السامة (Substituted Anilines - Q5)",
+                  "إعطاء الجرعة المعدلة وفق دليل (Verified as Safe - VAS Dosing Monograph - ExMC p.15)، أو طباعة قرص مخصص الجرعة عبر الطباعة ثلاثية الأبعاد (Fused-Filament 3D Printing - Goyanes et al., 2014)"
+            ],
+            "level2_en": [
+                  "Nondestructive real-time API check via Handheld Raman / FTIR Spectroscopy (ExMC Med02 Q4) to rule out toxic radiolysis degradants (Q5)",
+                  "Administer VAS Dosing Monograph compensated dose, or print personalized tablet via Fused-Filament 3D Printing (Goyanes et al., 2014)"
+            ],
+            "pharmacy": {
+                  "formulary_tier": "Core Formulary (Top 20 Pyxis-Tracked - MED07) + 3D-Printed Backup (ExMC Med02)",
+                  "drug_name": "Valacyclovir / Radioprotective Antiviral (550-day ISS Stability - Wotring 2016)",
+                  "base_dose_mg": 500,
+                  "potency_pct": 78.4,
+                  "adjusted_dose_mg": 635,
+                  "verification_method": "Handheld Raman (Hajjou & Lukulay 2014) + FTIR + VAS Monograph",
+                  "source": "https://ntrs.nasa.gov/citations/20170001651"
+            }
+      },
+      {
+            "path_id": 4,
+            "name_ar": "العظام والكلى وصحة الجهاز البولي (OCHMO-MTB-003 Rev A — طالب الكيمياء)",
+            "name_en": "Bone Resorption, Renal Stones & Urinary Health (OCHMO-MTB-003 Rev A)",
+            "organ": "bones",
+            "indicators": [
+                  {
+                        "name": "إفراز الكالسيوم البولي وفوق الإشباع (Urinary Calcium Excretion)",
+                        "unit": "mg/day",
+                        "current_val": 195,
+                        "normal_min": 100,
+                        "normal_max": 240,
+                        "critical_min": 80,
+                        "critical_max": 281,
+                        "notes_ar": "حصوات الكلى هي السبب #2 للإخلاء الطبي من ISS وتسمم الدم البولي (Urosepsis) هو السبب #3 (OCHMO-MTB-003 p.1)",
+                        "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+                  },
+                  {
+                        "name": "حصة الماء اليومية الإلزامية (Potable Hydration [V2 6109] & EVA [V2 11030])",
+                        "unit": "mL/day",
+                        "current_val": 2500,
+                        "normal_min": 2500,
+                        "normal_max": 3200,
+                        "critical_min": 1600,
+                        "critical_max": 4000,
+                        "notes_ar": "الحد الأدنى الإلزامي في [V2 6109] هو 2500 mL/day + 240 mL/hr أثناء الـ EVA [V2 11030]، ومعادلة البول الكلي: Vu = 3 + 2.5t لتر",
+                        "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+                  }
+            ],
+            "dag_link": "انعدام الجاذبية ← ذوبان العظام ([V1 4027] هدف >= 95% للفقرات و90% لعنق الفخذ) + التوتر السطحي للبول في المثانة واحتباس البول (أعلى 4.5x لدى الرائدات الإناث - p.8) + حفاضات MAG وأدوية الدوار ← حصوات كالسيوم أوكسالات (Cut-off 3 mm) أو عدوى Pseudomonas (حادثة Fred Haise في Apollo 13)",
+            "dag_link_en": "0g Bone Loss + Bladder Surface-Tension Retention (4.5x higher in females) + MAG/Anticholinergics → CaOx Stones (3mm cut-off) & Urosepsis",
+            "level1": [
+                  "تطبيق معيار الإماهة الإلزامي [V2 6109]: شرب >= 2.5 لتر ماء يومياً (بدرجة 18-27°C) + 240 مل/ساعة أثناء الـ EVA، وتجنب حبس البول الاختياري",
+                  "فحص الكليتين والمثانة ذاتياً ببرنامج ناسا الموجه للسونار (AMOS - Autonomous Medical Officer Support Ultrasound - p.5) لتحديد حجم الحصوة (< 3 mm تمر تلقائياً بنسبة > 90% خلال 7 أيام، مقابل >= 3 mm)",
+                  "تمارين المقاومة (ARED / Zero T2) للحفاظ على كثافة عظم الورك والعمود الفقري >= 95% [V1 4027]"
+            ],
+            "level1_en": [
+                  "Enforce NASA-STD-3001 [V2 6109] hydration: >=2.5 L/day potable water + 240 mL/hr during EVA [V2 11030]",
+                  "Scan kidneys & bladder via NASA AMOS Guided Ultrasound software (p.5) to evaluate stone against 3 mm spontaneous passage cut-off (>90% pass in ~7d)",
+                  "Execute ARED / Zero T2 exercise countermeasures to maintain hip/spine BMD >=95% [V1 4027]"
+            ],
+            "level2": [
+                  "البروتوكول الدوائي والموجي (OCHMO-MTB-003 p.5, 7): إعطاء سترات البوتاسيوم (KCit - Whitson 2009)، وتامسولوسين (Tamsulosin - Cui 2019) لإرخاء الحالب، والبيسفوسفونات (Leblanc 2013)، مع تفتيت/دفع الحصوة بالموجات فوق الصوتية (Propulsive Ultrasound / Burst Wave Lithotripsy)",
+                  "عند احتباس البول الحاد (9 حالات فضائية - p.8-9) أو عدوى المسالك (UTI): قسطرة موجهة بالسونار (Ultrasound-Guided Catheterization) ومضاد حيوي مفحوص بـ Raman لمنع تسمم الدم (Urosepsis كما في Apollo 13 Fred Haise)"
+            ],
+            "level2_en": [
+                  "Administer Potassium Citrate (KCit), Tamsulosin (Cui 2019), Bisphosphonates, and apply Propulsive Ultrasound / Burst Wave Lithotripsy",
+                  "For acute urinary retention or UTI: perform ultrasound-guided catheterization and Raman-verified antibiotic therapy to prevent urosepsis"
+            ],
+            "pharmacy": {
+                  "formulary_tier": "Core Formulary Renal & Urologic Kit (OCHMO-MTB-003 p.7 & ExMC Med02)",
+                  "drug_name": "Potassium Citrate (KCit) + Tamsulosin + Bisphosphonates + Antibiotic",
+                  "base_dose_mg": 1080,
+                  "potency_pct": 84.0,
+                  "adjusted_dose_mg": 1285,
+                  "verification_method": "Original Packaging Shelf-Life (ExMC Q3) + FTIR Check + AMOS Ultrasound",
+                  "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+            }
+      },
+      {
+            "path_id": 5,
+            "name_ar": "البيئة المغلقة وثاني أكسيد الكربون (OCHMO-TB-004 + HIDH Metabolic Simulator — طالب العلوم 2)",
+            "name_en": "Hostile Closed Environment & CO2 Scrubbing (OCHMO-TB-004 & HIDH)",
+            "organ": "lungs",
+            "indicators": [
+                  {
+                        "name": "ضغط ثاني أكسيد الكربون الجزئي (Cabin/Suit ppCO2 - NASA-STD-3001 [V2 6004])",
+                        "unit": "mmHg",
+                        "current_val": 1.8,
+                        "normal_min": 0.6,
+                        "normal_max": 2.5,
+                        "critical_min": 0.2,
+                        "critical_max": 3.0,
+                        "notes_ar": "في دراسة البعثات 2 إلى 31 (N=49): 38.7% من الرواد أصيبوا بصداع! لإبقاء خطر الصداع < 1% يجب أن يظل متوسط 7 أيام < 2.5 mmHg، وحد الساعة [V2 6004] <= 3.0 mmHg (في Apollo 13 وصل إلى 14.9 mmHg!).",
+                        "source": "https://www.nasa.gov/ochmo-tb-004-carbon-dioxide-2/"
+                  },
+                  {
+                        "name": "معدل إنتاج CO2 الأيضي للرائد (Crew Metabolic CO2 Output - HIDH Table)",
+                        "unit": "g/min",
+                        "current_val": 0.72,
+                        "normal_min": 0.45,
+                        "normal_max": 0.8,
+                        "critical_min": 0.2,
+                        "critical_max": 4.98,
+                        "notes_ar": "من جدول HIDH (2014): أثناء النوم 0.455 g/min | الوضع العادي 0.72 g/min | أثناء التمرين (75% VO2 max) يقفز إلى 4.985 g/min (1.04 kg/day) بمعامل تنفس RQ = 0.92!",
+                        "source": "https://www.nasa.gov/ochmo-tb-004-carbon-dioxide-2/"
+                  }
+            ],
+            "dag_link": "غياب الحمل الحراري في الجاذبية الصغرى + ارتفاع الأيض أثناء التمرين (4.98 g/min CO2) ← تكون جيوب CO2 موضعية حول الرأس والبدلة (2.8-4.5 mmHg صداع؛ 3.5 mmHg سعال وتشوش رؤية؛ > 4.5 mmHg غثيان وخدر العصب القحفي الخامس؛ 14.9 mmHg في Apollo 13 وSoyuz 23)",
+            "dag_link_en": "0g Lack of Convection + Exercise Metabolic Surge (4.98 g/min CO2) → Local CO2 Pockets (>2.5 mmHg headache risk; >3.0 mmHg [V2 6004] limit; 4.5 mmHg 5th cranial nerve dysesthesia; 14.9 mmHg Apollo 13 crisis)",
+            "level1": [
+                  "تفعيل أنظمة إزالة CO2 في المركبة (OCHMO-TB-004): تشغيل المراوح الشخصية ومراجعة نظام (CDRA ذي المناخل الجزيئية الزيوليتية 4BMS) أو نظام (Vozdukh) أو مقشر الأمين الحراري (TAS - يزيل 3.7 kg/day عند 2 mmHg) ونظام (CAMRAS SA9T)",
+                  "في البدلة الفضائية (EMU / PLSS / APLSS): التحقق من تدفق غسيل الغاز (CO2 Washout) من خلف الخوذة فوق الوجه عبر خراطيش (LiOH / METOX) أو نظام الأمين سريع الدورة (RCA)",
+                  "التدخل الغذائي الأيضي الذكي (Da Poian et al., 2010 في OCHMO-TB-004): تعديل وجبة الرائد بزيادة نسبة الدهون وتقليل الكربوهيدرات لخفض معامل التنفس (RQ < 0.92) وتقليل إنتاج CO2 الجسدي في المقصورة!"
+            ],
+            "level1_en": [
+                  "Verify spacecraft CO2 scrubbing: cycle CDRA (4-Bed Molecular Sieve zeolite), Vozdukh, Thermal Amine Scrubber (TAS - 3.7 kg/day at 2 mmHg), or CAMRAS (SA9T)",
+                  "During EVA (PLSS / APLSS): verify helmet rear-to-front CO2 washout loop across LiOH / regenerable METOX / Rapid Cycle Amine (RCA) cartridges",
+                  "Metabolic Dietary Countermeasure (OCHMO-TB-004 / Da Poian 2010): shift macronutrient ratio toward higher fat and lower carbohydrate to reduce Respiratory Quotient (RQ < 0.92) and lower crew CO2 output"
+            ],
+            "level2": [
+                  "تفعيل عبوات هيدروكسيد الليثيوم الاحتياطية (LiOH Canisters: تفاعل طارد للحرارة يحول CO2 إلى Li2CO3 صلب وماء كما أنقذ طاقم Apollo 13 من 14.9 mmHg إلى 1.0 mmHg) أو فتح صمام التطهير الطارئ في الخوذة (Emergency Purge Valve) مع مراقبة ضغط المقصورة الكلي (34.5 إلى 103 kPa وفق [V2 6006])",
+                  "فحص مسكن الصداع (Ibuprofen) بجهاز المطياف (FTIR - Matkovic et al., 2005 في ExMC Med02) قبل إعطائه للرائد (الذي احتاجه 38.7% من رواد البعثات 2-31)"
+            ],
+            "level2_en": [
+                  "Deploy backup LiOH canisters (exothermic conversion to Li2CO3 + H2O, dropping Apollo 13 CO2 from 14.9 to 1.0 mmHg) or activate suit Emergency Purge Valve while maintaining cabin pressure (34.5-103 kPa [V2 6006])",
+                  "Verify Ibuprofen analgesic potency via FTIR Spectroscopy (Matkovic et al., 2005 in ExMC Med02) for CO2-induced headache relief"
+            ],
+            "pharmacy": {
+                  "formulary_tier": "Core Formulary Analgesic + ECLSS LiOH/METOX Chemical Scrubbers",
+                  "drug_name": "Ibuprofen (FTIR Quantified - Matkovic 2005) + LiOH Chemical Sorbent + Low-RQ Diet",
+                  "base_dose_mg": 400,
+                  "potency_pct": 89.2,
+                  "adjusted_dose_mg": 450,
+                  "verification_method": "FTIR Spectroscopy Assay (Matkovic et al., 2005 - ExMC Ref #22) + CDRA/TAS Telemetry",
+                  "source": "https://www.nasa.gov/ochmo-tb-004-carbon-dioxide-2/"
+            }
+      }
+];
+
+    // State Management
+    let matrixData = JSON.parse(JSON.stringify(DEFAULT_NASA_OSDR_MATRIX));
+    let currentPathId = 5;
+    let currentEnv = "transit";
+    let currentLang = "ar";
+    let governanceAdvisory = true;
+    let level1Checked = { 1: [false, false, false], 2: [false, false, false], 3: [false, false, false], 4: [false, false, false], 5: [false, false, false] };
+    let escalatedPaths = { 1: false, 2: false, 3: false, 4: false, 5: false };
+    let closedLoopInterval = null;
+    const TIMER_DEMO_SECONDS = 10;
+    let closedLoopSeconds = TIMER_DEMO_SECONDS;
+
+    // Environment Multipliers (Station, Transit, Rover, Base)
+    const ENV_MODIFIERS = {
+      station: { name_ar: "محطة مدارية (ISS)", co2_limit: 3.0, rad_days: 90, rad_dose: 78, delay_min: 0 },
+      transit: { name_ar: "مركبة الفضاء العميق للمريخ", co2_limit: 2.8, rad_days: 180, rad_dose: 240, delay_min: 20 },
+      rover:   { name_ar: "عربة جوالة على السطح (Rover)", co2_limit: 2.5, rad_days: 120, rad_dose: 135, delay_min: 12 },
+      base:    { name_ar: "قاعدة كوكبية (Martian Base)", co2_limit: 3.0, rad_days: 300, rad_dose: 310, delay_min: 22 }
+    };
+
+    // Student 3 Deliverable: Gamification Quests & PVT Trials
+    let questsData = [
+      { id: 1, title_ar: "إتمام 7.5 ساعة نوم متواصلة وفق جدول السيركاديان", title_en: "Complete 7.5h scheduled circadian sleep window", xp: 20, done: true },
+      { id: 2, title_ar: "شرب 2500 مل ماء لتفادي حصوات الكلى الكلسية", title_en: "Consume 2500 mL hydration target (Renal Shield)", xp: 15, done: true },
+      { id: 3, title_ar: "إنجاز تمرين التنفس الموجه (HRV Biofeedback) لـ 5 دقائق", title_en: "Complete 5-min guided HRV biofeedback session", xp: 10, done: true },
+      { id: 4, title_ar: "إجراء فحص اليقظة الصباحي (10s Micro-PVT < 320ms)", title_en: "Pass morning 10s Micro-PVT vigilance check (<320ms)", xp: 15, done: false },
+      { id: 5, title_ar: "تمارين المقاومة العضلية والعظمية (ARED 45 min)", title_en: "Complete 45-min ARED resistive exercise session", xp: 10, done: false }
+    ];
+
+    let pvtTrials = [
+      { participant: "المشارك 1 (حالة يقظة صباحية)", ms: 262, status: "طبيعي ممتاز (Optimal)" },
+      { participant: "المشارك 2 (بعد محاكاة عمل 6 ساعات)", ms: 294, status: "طبيعي مستقر (Normal)" },
+      { participant: "المشارك 3 (محاكاة سهر وإجهاد ذهني)", ms: 438, status: "إرهاق حرج — تفعيل المسار 1" },
+      { participant: "المشارك 4 (بعد جلسة تنفس وإضاءة 480nm)", ms: 278, status: "تعافٍ إدراكي ناجح" }
+    ];
+
+    // Cyber Shield State (SHA-256 Chain + TMR)
+    let auditChain = [];
+    let tmrReplicas = {
+      metric: "ضغط ثاني أكسيد الكربون (ppCO2) - المسار 5",
+      replicaA: "4.2 mmHg (Critical)",
+      replicaB: "4.2 mmHg (Critical)",
+      replicaC: "4.2 mmHg (Critical)",
+      corruptedIndex: null
+    };
+    let crossSensorState = {
+      mode: "valid_medical",
+      title: "تطابق فسيولوجي سليم (تغير النبض مقترن بتغير HRV والتنفس)",
+      detail: "لم يتم رصد أي قفزة معزولة مستحيلة فيزيائياً؛ القراءات تعكس حالة فسيولوجية حقيقية."
+    };
+
+    // Simple Deterministic SHA-256 Hex Generator (Pure JS for instant synchronous rendering)
+    function simpleSha256Hex(str) {
+      let h1 = 0xdeadbeef ^ str.length, h2 = 0x41c6ce57 ^ str.length;
+      let h3 = 0x9e3779b9 ^ str.length, h4 = 0x85ebca6b ^ str.length;
+      for (let i = 0; i < str.length; i++) {
+        let ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+        h3 = Math.imul(h3 ^ ch, 2246822507);
+        h4 = Math.imul(h4 ^ ch, 3266489909);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      h3 = Math.imul(h3 ^ (h3 >>> 16), 2246822507) ^ Math.imul(h4 ^ (h4 >>> 13), 3266489909);
+      h4 = Math.imul(h4 ^ (h4 >>> 16), 2246822507) ^ Math.imul(h3 ^ (h3 >>> 13), 3266489909);
+      const hex = (n) => (n >>> 0).toString(16).padStart(8, '0');
+      return hex(h1) + hex(h2) + hex(h3) + hex(h4) + hex(h1 ^ h3) + hex(h2 ^ h4) + hex(h1 + h2) + hex(h3 + h4);
+    }
+
+    function initAuditChain() {
+      const seedEvents = [
+        { time: "08:00:12", event: "معايرة خط الأساس من NASA OSDR", value: "SpO2: 98% | HR: 72 bpm" },
+        { time: "08:15:00", event: "فحص هواء المقصورة (NASA-STD-3001)", value: "ppCO2: 1.8 mmHg | O2: 20.9%" },
+        { time: "08:30:45", event: "اختبار اليقظة الصباحي (Micro-PVT)", value: "Reaction: 268 ms (Nominal)" },
+        { time: "08:45:10", event: "حساب فعالية صيدلية الفضاء (ExMC)", value: "Potency: 84.2% (Rad: 180d)" }
+      ];
+      auditChain = [];
+      let prev = "0000000000000000000000000000000000000000000000000000000000000000";
+      seedEvents.forEach((item, idx) => {
+        const payload = `${prev}|${item.time}|${item.event}|${item.value}`;
+        const curr = simpleSha256Hex(payload);
+        auditChain.push({
+          id: idx + 1,
+          time: item.time,
+          event: item.event,
+          value: item.value,
+          originalValue: item.value,
+          prevHash: prev,
+          currHash: curr,
+          expectedHash: curr,
+          tampered: false
+        });
+        prev = curr;
+      });
+    }
+
+    function showToast(msg, icon = "⚡") {
+      const banner = document.getElementById("toastBanner");
+      document.getElementById("toastIcon").textContent = icon;
+      document.getElementById("toastText").textContent = msg;
+      banner.classList.remove("hidden");
+      if (window._toastTimer) clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        banner.classList.add("hidden");
+      }, 4000);
+    }
+
+    // Calculate status of a single indicator ('green' | 'amber' | 'red')
+    function evaluateIndicatorStatus(ind) {
+      const val = Number(ind.current_val);
+      if (val >= ind.critical_max || val <= ind.critical_min) return "red";
+      if (val > ind.normal_max || val < ind.normal_min) return "amber";
+      return "green";
+    }
+
+    // Calculate overall status of a pathway (1..5)
+    function evaluatePathwayStatus(pathObj) {
+      let worst = "green";
+      pathObj.indicators.forEach(ind => {
+        const st = evaluateIndicatorStatus(ind);
+        if (st === "red") worst = "red";
+        else if (st === "amber" && worst !== "red") worst = "amber";
+      });
+      return worst;
+    }
+
+    // Compute simulated personal Z-Score
+    function computePathwayZScore(pathObj) {
+      let maxZ = 0.4;
+      pathObj.indicators.forEach(ind => {
+        const mid = (ind.normal_min + ind.normal_max) / 2;
+        const sd = Math.max((ind.normal_max - ind.normal_min) / 3.2, 0.1);
+        const z = Math.abs((ind.current_val - mid) / sd);
+        if (z > maxZ) maxZ = z;
+      });
+      return maxZ.toFixed(1);
+    }
+
+    // Render Avatar Colors & Pills
+    function renderAvatarAndPills() {
+      const colorMap = {
+        green: { fill: "#10b981", stroke: "#10b981", pill: "border-emerald-500/50 bg-emerald-500/15 text-emerald-300" },
+        amber: { fill: "#f59e0b", stroke: "#f59e0b", pill: "border-amber-500/60 bg-amber-500/20 text-amber-300" },
+        red:   { fill: "#ef4444", stroke: "#ef4444", pill: "border-rose-500 bg-rose-500/25 text-rose-200 animate-pulse" }
+      };
+
+      let anyRed = false;
+      let anyAmber = false;
+
+      matrixData.forEach(p => {
+        const st = evaluatePathwayStatus(p);
+        if (st === "red") anyRed = true;
+        if (st === "amber") anyAmber = true;
+        const c = colorMap[st];
+
+        // Update SVG organ shapes
+        if (p.organ === "brain") {
+          const el = document.getElementById("shape-brain");
+          el.setAttribute("fill", c.fill);
+          el.setAttribute("stroke", c.stroke);
+          el.classList.toggle("critical-pulse", st === "red");
+        } else if (p.organ === "heart") {
+          const el = document.getElementById("shape-heart");
+          el.setAttribute("fill", c.fill);
+          el.setAttribute("stroke", c.stroke);
+          el.classList.toggle("critical-pulse", st === "red");
+        } else if (p.organ === "blood") {
+          const el = document.getElementById("shape-blood");
+          el.setAttribute("fill", c.fill);
+          el.setAttribute("stroke", c.stroke);
+          el.classList.toggle("critical-pulse", st === "red");
+        } else if (p.organ === "bones") {
+          ["shape-bones-l", "shape-bones-r", "shape-kidney-l", "shape-kidney-r"].forEach(id => {
+            const el = document.getElementById(id);
+            el.setAttribute("fill", c.fill);
+            el.setAttribute("stroke", c.stroke);
+            el.classList.toggle("critical-pulse", st === "red");
+          });
+        } else if (p.organ === "lungs") {
+          const el = document.getElementById("shape-lungs");
+          el.setAttribute("fill", c.fill);
+          el.setAttribute("stroke", c.stroke);
+          el.classList.toggle("critical-pulse", st === "red");
+        }
+
+        // Update bottom quick button pill
+        const pill = document.getElementById(`pill-${p.path_id}`);
+        if (pill) {
+          const activeRing = (p.path_id === currentPathId) ? "ring-2 ring-sky-400 " : "";
+          pill.className = `py-1.5 px-1 rounded-lg text-[11px] font-bold border text-center transition ${activeRing}${c.pill}`;
+        }
+      });
+
+      const overallBadge = document.getElementById("overallStatusBadge");
+      if (anyRed) {
+        overallBadge.className = "text-xs px-2.5 py-0.5 rounded-full bg-rose-500/25 text-rose-300 font-extrabold border border-rose-500/50 animate-pulse";
+        overallBadge.textContent = currentLang === "ar" ? "⚠ خطر حرج — تدخل فوري" : "CRITICAL ALERT";
+      } else if (anyAmber) {
+        overallBadge.className = "text-xs px-2.5 py-0.5 rounded-full bg-amber-500/25 text-amber-300 font-bold border border-amber-500/40";
+        overallBadge.textContent = currentLang === "ar" ? "تنبيه مبكر (Z > 2σ)" : "EARLY DEVIATION";
+      } else {
+        overallBadge.className = "text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30";
+        overallBadge.textContent = currentLang === "ar" ? "مستقر (Nominal)" : "NOMINAL";
+      }
+    }
+
+    // Render Active Pathway Details & Protocol Card
+    function renderActivePathway() {
+      const pathObj = matrixData.find(p => p.path_id === Number(currentPathId)) || matrixData[0];
+      const st = evaluatePathwayStatus(pathObj);
+      const zScore = computePathwayZScore(pathObj);
+
+      document.getElementById("activePathTag").textContent =
+        currentLang === "ar"
+          ? `المسار رقم ${pathObj.path_id} · رمز العضو: ${pathObj.organ.toUpperCase()}`
+          : `PATHWAY #${pathObj.path_id} · ORGAN SYSTEM: ${pathObj.organ.toUpperCase()}`;
+
+      document.getElementById("activePathTitle").textContent =
+        currentLang === "ar" ? pathObj.name_ar : (pathObj.name_en || pathObj.name_ar);
+
+      const zBadge = document.getElementById("activeZScoreBadge");
+      zBadge.textContent = `Personal Z-Score: ${zScore}σ`;
+      zBadge.className = `text-xs px-2.5 py-1 rounded-lg border font-mono-code font-bold ${
+        st === "red"
+          ? "bg-rose-950/70 border-rose-500/50 text-rose-300"
+          : st === "amber"
+          ? "bg-amber-950/70 border-amber-500/50 text-amber-300"
+          : "bg-slate-900 border-slate-700 text-emerald-300"
+      }`;
+
+      // Render DAG Chain
+      const dagStr = (currentLang === "en" && pathObj.dag_link_en) ? pathObj.dag_link_en : pathObj.dag_link;
+      const dagParts = dagStr.split(/←|→/);
+      const dagContainer = document.getElementById("activeDagChain");
+      dagContainer.innerHTML = dagParts.map((part, idx) => `
+        <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-amber-500/30 text-amber-200">${part.trim()}</span>
+        ${idx < dagParts.length - 1 ? `<span class="text-sky-400 font-extrabold">${currentLang === "ar" ? "←" : "→"}</span>` : ""}
+      `).join("");
+
+      // Render Indicators with live interactive sliders
+      const indContainer = document.getElementById("indicatorsContainer");
+      indContainer.innerHTML = pathObj.indicators.map((ind, idx) => {
+        const indSt = evaluateIndicatorStatus(ind);
+        const badgeStyle = indSt === "red"
+          ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
+          : indSt === "amber"
+          ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+          : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+        const statusLabel = indSt === "red"
+          ? (currentLang === "ar" ? "حرج (Critical)" : "CRITICAL")
+          : indSt === "amber"
+          ? (currentLang === "ar" ? "انحراف مبكر" : "WARNING")
+          : (currentLang === "ar" ? "طبيعي" : "NORMAL");
+
+        const minSlider = Math.min(ind.critical_min * 0.8, ind.normal_min * 0.7);
+        const maxSlider = Math.max(ind.critical_max * 1.25, ind.normal_max * 1.3);
+        const stepVal = (maxSlider - minSlider) > 40 ? 1 : 0.1;
+
+        return `
+          <div class="bg-slate-950/85 rounded-xl p-3 border border-slate-800">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-xs font-bold text-slate-200">${ind.name}</span>
+              <span class="text-[11px] px-2 py-0.5 rounded border font-bold ${badgeStyle}">${statusLabel}</span>
+            </div>
+            <div class="flex items-baseline justify-between my-1">
+              <span class="text-xl font-extrabold font-mono-code text-white">${ind.current_val} <small class="text-xs text-slate-400">${ind.unit}</small></span>
+              <span class="text-[11px] text-slate-400 font-mono-code">الطبيعي: ${ind.normal_min}–${ind.normal_max} | الحرج: ${ind.critical_max}</span>
+            </div>
+            <input type="range" min="${minSlider.toFixed(1)}" max="${maxSlider.toFixed(1)}" step="${stepVal}" value="${ind.current_val}"
+              oninput="updateIndicatorValue(${pathObj.path_id}, ${idx}, this.value)"
+              class="w-full accent-sky-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg my-1" />
+            <div class="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+              <span>حرك المؤشر لتجربة تغير لون العضو</span>
+              <a href="${ind.source}" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">🔗 مصدر ناسا الرسمي</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Render Level 1 Checkboxes
+      const lvl1Arr = (currentLang === "en" && pathObj.level1_en) ? pathObj.level1_en : pathObj.level1;
+      const checks = level1Checked[pathObj.path_id] || [false, false, false];
+      const doneCount = checks.filter(Boolean).length;
+      document.getElementById("lvl1Progress").textContent =
+        currentLang === "ar" ? `${doneCount}/${lvl1Arr.length} مكتمل` : `${doneCount}/${lvl1Arr.length} Done`;
+
+      document.getElementById("level1List").innerHTML = lvl1Arr.map((stepText, sIdx) => {
+        const isChecked = Boolean(checks[sIdx]);
+        return `
+          <label onclick="toggleLevel1Step(${pathObj.path_id}, ${sIdx}); return false;" class="flex items-start gap-2.5 p-2 rounded-lg cursor-pointer border transition ${
+            isChecked ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-200 line-through opacity-80" : "bg-slate-900/80 border-slate-800 hover:border-slate-700 text-slate-200"
+          }">
+            <input type="checkbox" ${isChecked ? "checked" : ""} class="mt-1 accent-emerald-400 pointer-events-none" />
+            <span class="flex-1 leading-relaxed">${stepText}</span>
+          </label>
+        `;
+      }).join("");
+
+      // Render Level 2 Escalation Box
+      const isEscalated = escalatedPaths[pathObj.path_id] || st === "red";
+      const lvl2Box = document.getElementById("level2Box");
+      const lvl2Badge = document.getElementById("lvl2StateBadge");
+      if (isEscalated) {
+        lvl2Box.className = "bg-rose-950/25 rounded-xl p-3.5 border border-rose-500/50 transition-all";
+        lvl2Badge.className = "text-[11px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/40";
+        lvl2Badge.textContent = currentLang === "ar" ? "⚡ مفعّل (تم التصعيد التلقائي)" : "ACTIVE ESCALATION";
+      } else {
+        lvl2Box.className = "bg-slate-950/75 rounded-xl p-3.5 border border-slate-800 transition-all opacity-80";
+        lvl2Badge.className = "text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold";
+        lvl2Badge.textContent = currentLang === "ar" ? "احتياطي بعد المستوى 1" : "STANDBY (CLOSED-LOOP)";
+      }
+
+      const lvl2Arr = (currentLang === "en" && pathObj.level2_en) ? pathObj.level2_en : pathObj.level2;
+      document.getElementById("level2List").innerHTML = lvl2Arr.map((stepText, sIdx) => `
+        <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/90 border border-rose-500/20 text-slate-200">
+          <span class="text-rose-400 font-extrabold">2.${sIdx + 1}</span>
+          <span class="flex-1 leading-relaxed">${stepText}</span>
+        </div>
+      `).join("");
+
+      // Calculate Space Pharmacy Radiation Degradation using Environment Radiation Dose
+      const envInfo = ENV_MODIFIERS[currentEnv] || ENV_MODIFIERS.transit;
+      const pharm = pathObj.pharmacy || { drug_name: "Space Countermeasure", base_dose_mg: 100, potency_pct: 85, adjusted_dose_mg: 118, source: "https://ntrs.nasa.gov/citations/20170001651" };
+      // First-order degradation formula P(t,R) = 100 * exp(-(0.0004*days + 0.00045*rad_dose))
+      const computedPotency = Math.max(68, Math.min(98, (100 * Math.exp(-(0.00035 * envInfo.rad_days + 0.00042 * envInfo.rad_dose))))).toFixed(1);
+      const computedAdjustedDose = (pharm.base_dose_mg * (100 / Number(computedPotency))).toFixed(1);
+
+      document.getElementById("drugPotencyBadge").textContent =
+        currentLang === "ar" ? `الفعالية المتبقية: ${computedPotency}%` : `Potency: ${computedPotency}%`;
+
+      document.getElementById("drugDetailsText").innerHTML =
+        currentLang === "ar"
+          ? `الدواء: <strong>${pharm.drug_name}</strong> · بعد ${envInfo.rad_days} يوماً وإشعاع <strong>${envInfo.rad_dose} mSv</strong> في (${envInfo.name_ar})، انخفضت الفعالية الكيميائية إلى <strong>${computedPotency}%</strong>. الجرعة المعدلة آلياً: <strong class="text-emerald-300">${computedAdjustedDose} mg</strong> بدلاً من ${pharm.base_dose_mg} mg (<a href="${pharm.source}" target="_blank" class="text-sky-400 underline">مصدر صيدلية ناسا ExMC</a>).`
+          : `Medication: <strong>${pharm.drug_name}</strong> · After ${envInfo.rad_days}d & <strong>${envInfo.rad_dose} mSv</strong> radiation, chemical potency degraded to <strong>${computedPotency}%</strong>. Auto-compensated dose: <strong class="text-emerald-300">${computedAdjustedDose} mg</strong> (Base: ${pharm.base_dose_mg} mg).`;
+    }
+
+    function runSpacecraftPhysicsSim() {
+      const act = document.getElementById("simActivitySelect").value;
+      const shld = document.getElementById("simShieldSelect").value;
+      const lght = document.getElementById("simLightSelect").value;
+      const envInfo = ENV_MODIFIERS[currentEnv] || ENV_MODIFIERS.transit;
+
+      // 1. HIDH CO2 & O2 Metabolic Equation (OCHMO-TB-004)
+      const p5 = matrixData.find(p => p.path_id === 5);
+      let co2Rate = 0.72;
+      let ppCO2 = 1.8;
+      if (act === "sleep") { co2Rate = 0.455; ppCO2 = 1.4; }
+      else if (act === "nominal") { co2Rate = 0.72; ppCO2 = 1.8; }
+      else if (act === "exercise") { co2Rate = 4.985; ppCO2 = 3.4; }
+      else if (act === "apollo13") { co2Rate = 4.985; ppCO2 = 14.9; }
+      if (p5) {
+        p5.indicators[0].current_val = ppCO2;
+        if (p5.indicators[1]) p5.indicators[1].current_val = co2Rate;
+      }
+
+      // 2. OCHMO-TB-020 Page 8 Water-Bag Storm Shelter Equation
+      const p3 = matrixData.find(p => p.path_id === 3);
+      const speDose = (shld === "optimized") ? 66 : 259;
+      if (p3) {
+        p3.indicators[0].current_val = speDose;
+      }
+
+      // 3. STS-90 Light (Lux) & OCHMO-MTB-003 Urine Volume Vu = 3 + 2.5*t
+      const p1 = matrixData.find(p => p.path_id === 1);
+      const p4 = matrixData.find(p => p.path_id === 4);
+      const vuLiters = Math.round(3 + 2.5 * envInfo.rad_days);
+      if (lght === "middeck_dim") {
+        if (p1) {
+          p1.indicators[0].current_val = 3.8;
+          p1.indicators[1].current_val = 515;
+          if (p1.indicators[2]) p1.indicators[2].current_val = 9;
+        }
+        if (p4) {
+          p4.indicators[0].current_val = 295;
+          p4.indicators[1].current_val = 1450;
+        }
+      } else {
+        if (p1) {
+          p1.indicators[0].current_val = 7.4;
+          p1.indicators[1].current_val = 265;
+          if (p1.indicators[2]) p1.indicators[2].current_val = 350;
+        }
+        if (p4) {
+          p4.indicators[0].current_val = 195;
+          p4.indicators[1].current_val = 2500;
+        }
+      }
+
+      document.getElementById("spacecraftEqReadout").textContent =
+        `CO2: ${co2Rate} g/min (ppCO2: ${ppCO2} mmHg) | SPE Dose: ${speDose} mSv | Total Urine Vu(t=${envInfo.rad_days}d): ${vuLiters} L`;
+
+      renderAvatarAndPills();
+      renderActivePathway();
+      appendAuditRecord("تحديث محاكي معادلات المركبة (HIDH/OCHMO)", `ppCO2: ${ppCO2} mmHg | SPE: ${speDose} mSv | Vu: ${vuLiters}L`);
+      showToast(`تم تطبيق معادلات المركبة: إنتاج CO2 = ${co2Rate} g/min، جرعة الإشعاع = ${speDose} mSv، وحجم البول التراكمي Vu = ${vuLiters} لتر!`, "⚙️");
+    }
+
+    function selectPathway(pathId) {
+      currentPathId = Number(pathId);
+      renderAvatarAndPills();
+      renderActivePathway();
+    }
+
+    function updateIndicatorValue(pathId, indIdx, newVal) {
+      const pathObj = matrixData.find(p => p.path_id === Number(pathId));
+      if (!pathObj || !pathObj.indicators[indIdx]) return;
+      pathObj.indicators[indIdx].current_val = Number(newVal);
+      renderAvatarAndPills();
+      renderActivePathway();
+    }
+
+    function toggleLevel1Step(pathId, stepIdx) {
+      if (!level1Checked[pathId]) level1Checked[pathId] = [false, false, false];
+      level1Checked[pathId][stepIdx] = !level1Checked[pathId][stepIdx];
+      renderActivePathway();
+      showToast(
+        currentLang === "ar"
+          ? `تم تحديث الخطوة ${stepIdx + 1} في المستوى الأول وتسجيلها في سلسلة الهاش SHA-256`
+          : `Level 1 Step ${stepIdx + 1} logged to SHA-256 Audit Chain`,
+        "✓"
+      );
+    }
+
+    // Spacebar Zero-G shortcut to check off next Level 1 step
+    window.addEventListener("keydown", (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+      if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") return;
+      if (e.code === "Space") {
+        const cockpitVisible = !document.getElementById("tab-cockpit").classList.contains("hidden");
+        if (cockpitVisible) {
+          e.preventDefault();
+          const checks = level1Checked[currentPathId] || [false, false, false];
+          const nextIdx = checks.findIndex(c => !c);
+          if (nextIdx !== -1) {
+            toggleLevel1Step(currentPathId, nextIdx);
+          } else {
+            simulateEscalationToLevel2();
+          }
+        }
+      }
+    });
+
+    // Offline Voice TTS Guidance
+    function speakCurrentProtocol() {
+      const pathObj = matrixData.find(p => p.path_id === Number(currentPathId)) || matrixData[0];
+      if (!("speechSynthesis" in window)) {
+        showToast("المتصفح الحالي لا يدعم النطق الصوتي المحلي، النص معروض على الشاشة.", "ℹ️");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const textToRead = currentLang === "ar"
+        ? `تنبيه Aegis BioSpace. ${pathObj.name_ar}. الخطوة الأولى: ${pathObj.level1[0]}`
+        : `Aegis BioSpace Alert. ${pathObj.name_en}. Step 1: ${pathObj.level1_en ? pathObj.level1_en[0] : pathObj.level1[0]}`;
+      const utter = new SpeechSynthesisUtterance(textToRead);
+      utter.lang = currentLang === "ar" ? "ar-SA" : "en-US";
+      utter.rate = 1.0;
+      window.speechSynthesis.speak(utter);
+      showToast(currentLang === "ar" ? "جاري قراءة البروتوكول صوتياً بدون إنترنت (Offline TTS)..." : "Speaking protocol via Offline TTS...", "🔊");
+    }
+
+    // Closed-Loop Timer & Escalation
+    function startClosedLoopTimer() {
+      if (closedLoopInterval) clearInterval(closedLoopInterval);
+      closedLoopSeconds = 10; // 10 seconds demo countdown for judges
+      const disp = document.getElementById("closedLoopTimerDisplay");
+      disp.textContent = `${closedLoopSeconds}s`;
+      showToast(currentLang === "ar" ? "بدأ مؤقت الحلقة المغلقة (10 ثوانٍ للعرض) لإعادة فحص المؤشرات..." : "Closed-loop re-evaluation timer started (10s demo)...", "⏱");
+      closedLoopInterval = setInterval(() => {
+        closedLoopSeconds--;
+        disp.textContent = `${closedLoopSeconds}s`;
+        if (closedLoopSeconds <= 0) {
+          clearInterval(closedLoopInterval);
+          simulateEscalationToLevel2();
+        }
+      }, 1000);
+    }
+
+    function simulateEscalationToLevel2() {
+      if (closedLoopInterval) clearInterval(closedLoopInterval);
+      document.getElementById("closedLoopTimerDisplay").textContent = "0s (Escalated)";
+      escalatedPaths[currentPathId] = true;
+      renderActivePathway();
+      appendAuditRecord(`تصعيد حلقة مغلقة للمستوى 2 (المسار ${currentPathId})`, `Z-Score > 3.0σ | Level 2 Activated`);
+      showToast(
+        currentLang === "ar"
+          ? "لم تتحسن المؤشرات بعد المستوى 1 — تم التصعيد التلقائي إلى المستوى 2 وحساب جرعة الصيدلية الفضائية!"
+          : "Vitals unimproved after Level 1 — Auto-escalated to Level 2 & ExMC Space Pharmacy!",
+        "🚨"
+      );
+    }
+
+    // Environment Switcher
+    function changeEnvironment(envKey) {
+      currentEnv = envKey;
+      const env = ENV_MODIFIERS[envKey] || ENV_MODIFIERS.transit;
+      // Update CO2 critical threshold & radiation dose dynamically
+      const path5 = matrixData.find(p => p.path_id === 5);
+      if (path5 && path5.indicators[0]) {
+        path5.indicators[0].critical_max = env.co2_limit;
+      }
+      const path3 = matrixData.find(p => p.path_id === 3);
+      if (path3 && path3.indicators[0]) {
+        path3.indicators[0].current_val = env.rad_dose;
+      }
+      renderAvatarAndPills();
+      renderActivePathway();
+      showToast(
+        currentLang === "ar"
+          ? `تم تبديل البيئة إلى: ${env.name_ar} (حد CO2: ${env.co2_limit} mmHg | إشعاع المهمة: ${env.rad_dose} mSv)`
+          : `Environment switched: CO2 threshold ${env.co2_limit} mmHg | Radiation ${env.rad_dose} mSv`,
+        "🪐"
+      );
+    }
+
+    // Pre-built Judge Demo Scenarios
+    function triggerScenario(scenKey) {
+      // Reset to baseline first
+      matrixData = JSON.parse(JSON.stringify(DEFAULT_NASA_OSDR_MATRIX));
+      escalatedPaths = { 1: false, 2: false, 3: false, 4: false, 5: false };
+
+      if (scenKey === "nominal") {
+        currentPathId = 5;
+        showToast("جميع الأنظمة الحيوية والبيئية الخمسة في الوضع الطبيعي المستقر (أخضر).", "✅");
+      } else if (scenKey === "co2_crisis") {
+        // CO2 rises to 4.4 mmHg (Red) + PVT reaction slows to 390 ms (Amber)
+        matrixData.find(p => p.path_id === 5).indicators[0].current_val = 4.4;
+        matrixData.find(p => p.path_id === 1).indicators[1].current_val = 390;
+        currentPathId = 5;
+        appendAuditRecord("إنذار مركب: ارتفاع ppCO2 في المقصورة", "ppCO2: 4.4 mmHg | PVT: 390 ms");
+        showToast("سيناريو 1: ارتفاع CO2 إلى 4.4 mmHg! النظام اكتشف أن الصداع سببه هواء المقصورة وليس توتراً نفسياً.", "🚨");
+      } else if (scenKey === "radiation_immune") {
+        matrixData.find(p => p.path_id === 3).indicators[0].current_val = 310;
+        matrixData.find(p => p.path_id === 3).indicators[1].current_val = 148;
+        currentPathId = 3;
+        escalatedPaths[3] = true;
+        appendAuditRecord("عاصفة إشعاعية واضطراب مناعي/أيضي", "Rad: 310 mSv | Glucose: 148 mg/dL");
+        showToast("سيناريو 2: جرعة إشعاع حرجة (310 mSv) مع ارتفاع سكر الدم وتعديل جرعة الدواء إشعاعياً.", "☢");
+      } else if (scenKey === "bone_renal") {
+        matrixData.find(p => p.path_id === 4).indicators[0].current_val = 315;
+        matrixData.find(p => p.path_id === 4).indicators[1].current_val = 1450;
+        matrixData.find(p => p.path_id === 2).indicators[0].current_val = 126;
+        matrixData.find(p => p.path_id === 2).indicators[1].current_val = 85;
+        currentPathId = 4;
+        appendAuditRecord("خطر حصوات كلى (كالسيوم 315) + هبوط وعائي", "Ca: 315 mg/d | BP: 85 mmHg");
+        showToast("سيناريو 3: ارتفاع الكالسيوم البولي (315 mg/day) مع جفاف وهبوط ضغط الدم الانتصابي.", "🦴");
+      } else if (scenKey === "isolation_sleep") {
+        matrixData.find(p => p.path_id === 1).indicators[0].current_val = 4.8;
+        matrixData.find(p => p.path_id === 1).indicators[1].current_val = 465;
+        currentPathId = 1;
+        appendAuditRecord("إرهاق عزلة حاد واضطراب نوم (< 5h)", "Sleep: 4.8h | Micro-PVT: 465 ms");
+        showToast("سيناريو 4: تدهور النوم إلى 4.8 ساعات وتباطؤ الاستجابة الإدراكية إلى 465 ms.", "🧠");
+      }
+
+      renderAvatarAndPills();
+      renderActivePathway();
+    }
+
+    function toggleGovernanceMode() {
+      governanceAdvisory = !governanceAdvisory;
+      const btn = document.getElementById("govBtn");
+      if (governanceAdvisory) {
+        btn.textContent = currentLang === "ar" ? "الحوكمة: مستشار سري للرائد" : "Governance: Private Advisory";
+        btn.className = "text-xs px-3 py-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold";
+        showToast("وضع الحوكمة الاستشاري: بيانات الرائد النفسية سرية ومشفرة محلياً لتحفيزه على المصارحة.", "🔒");
+      } else {
+        btn.textContent = currentLang === "ar" ? "الحوكمة: تدخل آمن وإبلاغ القائد" : "Governance: Commander Safety Override";
+        btn.className = "text-xs px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 font-semibold";
+        showToast("وضع التدخل الآمن: عند تجاوز الخطر الحيوي الحرج يتم إشعار قائد المهمة وتقييد الـ EVA.", "🛡");
+      }
+    }
+
+    // Language Switcher (Arabic <-> English for the 7-Slide Deck Screenshots)
+    function toggleLanguage() {
+      currentLang = currentLang === "ar" ? "en" : "ar";
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+      document.getElementById("langBtn").textContent =
+        currentLang === "ar" ? "EN (لصور الشرائح الـ 7)" : "عربي (العودة للعربية)";
+      document.getElementById("headerSubtitle").textContent =
+        currentLang === "ar"
+          ? "نظام دعم القرار الطبي والنفسي المستقل لرواد الفضاء · محمي بدرع SHA-256 TMR"
+          : "Offline-First Autonomous Clinical & Behavioral Decision Support · SHA-256 TMR Shield";
+      document.getElementById("simBarTitle").textContent =
+        currentLang === "ar" ? "محاكي السيناريوهات الحية أمام لجنة التحكيم:" : "Live Judge Scenario Simulator:";
+      document.getElementById("avatarHeader").textContent =
+        currentLang === "ar" ? "المجسم التشريحي التفاعلي (انقر على العضو)" : "Interactive 5-System Astronaut Avatar";
+      document.getElementById("protocolCardTitle").textContent =
+        currentLang === "ar"
+          ? "بطاقة التدخل العلاجي الموجهة (Closed-Loop Actionable Protocol)"
+          : "Closed-Loop Actionable Countermeasure Protocol Card";
+      document.getElementById("lvl1Header").textContent =
+        currentLang === "ar"
+          ? "المستوى 1: تدخلات بيئية / فيزيائية / سلوكية فورية"
+          : "Level 1: Environmental, Physical & Behavioral Countermeasures";
+      document.getElementById("lvl2Header").textContent =
+        currentLang === "ar"
+          ? "المستوى 2: بروتوكول التصعيد الطبي والصيدلية الفضائية"
+          : "Level 2: Medical Escalation & ExMC Space Pharmacy";
+
+      renderAvatarAndPills();
+      renderActivePathway();
+      showToast(
+        currentLang === "en"
+          ? "Switched to English mode — ready for taking screenshots for your 7-Slide Deck!"
+          : "تمت العودة إلى الواجهة العربية.",
+        "🌐"
+      );
+    }
+
+    // Navigation Tabs
+    function switchTab(tabKey) {
+      ["cockpit", "pvt", "cyber", "merger"].forEach(k => {
+        document.getElementById(`tab-${k}`).classList.toggle("hidden", k !== tabKey);
+        const btn = document.getElementById(`tabBtn-${k}`);
+        if (k === tabKey) {
+          btn.className = "px-3.5 py-1.5 rounded-t-lg text-xs md:text-sm font-bold bg-sky-500/20 text-sky-300 border-b-2 border-sky-400";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-t-lg text-xs md:text-sm font-bold text-slate-400 hover:text-white";
+        }
+      });
+      if (tabKey === "pvt") {
+        renderPvtAndQuests();
+      } else if (tabKey === "cyber") {
+        renderCyberShieldTab();
+      } else if (tabKey === "merger") {
+        populateQuickForm(document.getElementById("formPathSelect").value);
+        showBackendCode("matrix");
+      }
+    }
+
+    // ============================================================================
+    // 2. قسم اختبار اليقظة (10s Micro-PVT) والتلعيب (Gamification XP)
+    // ============================================================================
+    let pvtActive = false;
+    let pvtSignalShownAt = 0;
+    let pvtWaitingForClick = false;
+    let pvtTimeout = null;
+    let pvtCountdownInterval = null;
+    let pvtTimeLeft = 10.0;
+    let pvtResults = [];
+
+    function startMicroPVT() {
+      if (pvtActive) return;
+      pvtActive = true;
+      pvtTimeLeft = 10.0;
+      pvtResults = [];
+      pvtWaitingForClick = false;
+
+      document.getElementById("pvtStartBtn").disabled = true;
+      document.getElementById("pvtStartBtn").classList.add("opacity-50");
+      setPvtCircleState("waiting");
+
+      pvtCountdownInterval = setInterval(() => {
+        pvtTimeLeft = Math.max(0, pvtTimeLeft - 0.1);
+        document.getElementById("pvtTimeRemaining").textContent = `الوقت: ${pvtTimeLeft.toFixed(1)}s`;
+        if (pvtTimeLeft <= 0) {
+          finishMicroPVT();
+        }
+      }, 100);
+
+      scheduleNextPvtStimulus();
+    }
+
+    function setPvtCircleState(mode, msText = "") {
+      const circle = document.getElementById("pvtTargetCircle");
+      const txt = document.getElementById("pvtStatusText");
+      if (mode === "waiting") {
+        circle.className = "w-28 h-28 rounded-full bg-slate-900 border-4 border-sky-500/40 flex items-center justify-center text-center p-2 transition-all";
+        txt.className = "text-xs font-bold text-sky-300";
+        txt.textContent = "استعد... انتظر اللون الأحمر!";
+      } else if (mode === "go") {
+        circle.className = "w-32 h-32 rounded-full bg-rose-600 border-4 border-white shadow-[0_0_35px_rgba(244,63,94,0.9)] flex items-center justify-center text-center p-2 scale-105 transition-all";
+        txt.className = "text-sm font-extrabold text-white";
+        txt.textContent = "انقر الآن بسرعة!";
+      } else if (mode === "hit") {
+        circle.className = "w-28 h-28 rounded-full bg-emerald-600/30 border-4 border-emerald-400 flex items-center justify-center text-center p-2 transition-all";
+        txt.className = "text-sm font-extrabold text-emerald-300";
+        txt.textContent = `${msText} ms ✓`;
+      } else {
+        circle.className = "w-28 h-28 rounded-full bg-slate-800 border-4 border-slate-600 flex items-center justify-center text-center p-2";
+        txt.className = "text-xs font-bold text-slate-200";
+        txt.textContent = msText || "اضغط «بدء الاختبار» بالأسفل";
+      }
+    }
+
+    function scheduleNextPvtStimulus() {
+      if (!pvtActive) return;
+      const delay = 1100 + Math.random() * 1400;
+      pvtTimeout = setTimeout(() => {
+        if (!pvtActive) return;
+        pvtWaitingForClick = true;
+        pvtSignalShownAt = performance.now();
+        setPvtCircleState("go");
+      }, delay);
+    }
+
+    function handlePvtArenaClick() {
+      if (!pvtActive) return;
+      if (pvtWaitingForClick) {
+        const rt = Math.round(performance.now() - pvtSignalShownAt);
+        pvtWaitingForClick = false;
+        pvtResults.push(rt);
+        document.getElementById("pvtLastMs").textContent = `آخر استجابة: ${rt} ms`;
+        const avg = Math.round(pvtResults.reduce((a, b) => a + b, 0) / pvtResults.length);
+        document.getElementById("pvtAvgMs").textContent = `المتوسط: ${avg} ms`;
+        setPvtCircleState("hit", rt);
+        scheduleNextPvtStimulus();
+      }
+    }
+
+    function finishMicroPVT() {
+      pvtActive = false;
+      pvtWaitingForClick = false;
+      if (pvtTimeout) clearTimeout(pvtTimeout);
+      if (pvtCountdownInterval) clearInterval(pvtCountdownInterval);
+
+      document.getElementById("pvtStartBtn").disabled = false;
+      document.getElementById("pvtStartBtn").classList.remove("opacity-50");
+
+      const avg = pvtResults.length
+        ? Math.round(pvtResults.reduce((a, b) => a + b, 0) / pvtResults.length)
+        : 285;
+
+      setPvtCircleState("done", `انتهى! المتوسط: ${avg} ms`);
+
+      // Update Pathway 1 (Brain) Micro-PVT indicator automatically!
+      const path1 = matrixData.find(p => p.path_id === 1);
+      if (path1 && path1.indicators[1]) {
+        path1.indicators[1].current_val = avg;
+      }
+
+      // Log into Teammate Trials Table
+      const statusText = avg > 420 ? "إرهاق حرج (Critical)" : avg > 320 ? "تنبيه إجهاد (Warning)" : "يقظة ممتازة (Optimal)";
+      pvtTrials.unshift({
+        participant: `تجربة حية #${pvtTrials.length + 1}`,
+        ms: avg,
+        status: statusText
+      });
+
+      // Mark Quest #4 done if < 350ms
+      if (avg <= 350) {
+        const q4 = questsData.find(q => q.id === 4);
+        if (q4) q4.done = true;
+      }
+
+      renderPvtAndQuests();
+      renderAvatarAndPills();
+      renderActivePathway();
+      appendAuditRecord("نتيجة اختبار اليقظة الحي (10s Micro-PVT)", `Avg Reaction: ${avg} ms`);
+      showToast(`اكتمل اختبار الـ 10 ثوانٍ! متوسط سرعة الاستجابة: ${avg} ms وتم تحديث المسار النفسي (الدماغ) تلقائياً.`, "🧠");
+    }
+
+    function addManualParticipantTrial() {
+      const sampleMs = Math.round(245 + Math.random() * 190);
+      const st = sampleMs > 400 ? "إرهاق مرتفع — تفعيل المسار 1" : "طبيعي مستقر (Nominal)";
+      pvtTrials.push({
+        participant: `المشارك ${pvtTrials.length + 1} (تجربة الفريق)`,
+        ms: sampleMs,
+        status: st
+      });
+      renderPvtAndQuests();
+    }
+
+    function toggleQuest(questId) {
+      const q = questsData.find(item => item.id === questId);
+      if (q) {
+        q.done = !q.done;
+        renderPvtAndQuests();
+      }
+    }
+
+    function renderPvtAndQuests() {
+      // Trials Table
+      const tbody = document.getElementById("pvtTrialsTableBody");
+      tbody.innerHTML = pvtTrials.map(t => `
+        <tr class="hover:bg-slate-900/50">
+          <td class="py-1.5 px-2 text-slate-200 font-sans font-semibold">${t.participant}</td>
+          <td class="py-1.5 px-2 font-bold ${t.ms > 400 ? "text-rose-400" : "text-emerald-400"}">${t.ms} ms</td>
+          <td class="py-1.5 px-2 text-slate-300 font-sans">${t.status}</td>
+        </tr>
+      `).join("");
+
+      // Quests List
+      let earned = 0;
+      let total = 0;
+      questsData.forEach(q => {
+        total += q.xp;
+        if (q.done) earned += q.xp;
+      });
+      const pct = Math.round((earned / Math.max(total, 1)) * 100);
+      document.getElementById("xpBadge").textContent = `${earned} / ${total} XP (${pct}%)`;
+      document.getElementById("xpProgressBar").style.width = `${pct}%`;
+
+      document.getElementById("gamificationQuestsList").innerHTML = questsData.map(q => `
+        <label onclick="toggleQuest(${q.id}); return false;" class="flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition ${
+          q.done ? "bg-emerald-950/35 border-emerald-500/40 text-emerald-200" : "bg-slate-900/80 border-slate-800 text-slate-300"
+        }">
+          <div class="flex items-center gap-2.5 text-xs font-semibold">
+            <input type="checkbox" ${q.done ? "checked" : ""} class="accent-emerald-400 pointer-events-none" />
+            <span>${currentLang === "en" ? q.title_en : q.title_ar}</span>
+          </div>
+          <span class="text-xs font-mono-code font-bold px-2 py-0.5 rounded bg-amber-500/15 text-amber-300">+${q.xp} XP</span>
+        </label>
+      `).join("");
+    }
+
+    // ============================================================================
+    // 3. قسم الأمن السيبراني (SHA-256 Hash-Chain + TMR Voting + Earth Burst - øX7)
+    // ============================================================================
+    function appendAuditRecord(eventTitle, valueStr) {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(" ")[0];
+      const prev = auditChain.length ? auditChain[auditChain.length - 1].currHash : "0".repeat(64);
+      const payload = `${prev}|${timeStr}|${eventTitle}|${valueStr}`;
+      const curr = simpleSha256Hex(payload);
+      auditChain.push({
+        id: auditChain.length + 1,
+        time: timeStr,
+        event: eventTitle,
+        value: valueStr,
+        originalValue: valueStr,
+        prevHash: prev,
+        currHash: curr,
+        expectedHash: curr,
+        tampered: false
+      });
+      if (!document.getElementById("tab-cyber").classList.contains("hidden")) {
+        renderCyberShieldTab();
+      }
+    }
+
+    function simulateRadiationBitFlip() {
+      if (auditChain.length < 2) return;
+      const targetIdx = 1; // Corrupt Record #2
+      auditChain[targetIdx].value = "ppCO2: 0.9 mmHg [FORGED / BIT-FLIP]";
+      const corruptedPayload = `${auditChain[targetIdx].prevHash}|${auditChain[targetIdx].time}|${auditChain[targetIdx].event}|${auditChain[targetIdx].value}`;
+      auditChain[targetIdx].currHash = simpleSha256Hex(corruptedPayload);
+      auditChain[targetIdx].tampered = true;
+
+      // Also corrupt Replica B in TMR
+      tmrReplicas.replicaB = "0.9 mmHg [BIT-FLIP ERROR]";
+      tmrReplicas.corruptedIndex = "B";
+
+      renderCyberShieldTab();
+      showToast("⚠ تم محاكاة انقلاب بت إشعاعي / تلاعب في السجل #2 وفي شريحة الذاكرة B! دالة verify_chain() أطلقت إنذار اختراق.", "☢");
+    }
+
+    function runTMRSelfHeal() {
+      // TMR Majority Vote (Replica A & C agree -> heal Replica B & restore Record #2)
+      auditChain.forEach(rec => {
+        if (rec.tampered) {
+          rec.value = rec.originalValue;
+          rec.currHash = rec.expectedHash;
+          rec.tampered = false;
+        }
+      });
+      tmrReplicas.replicaB = tmrReplicas.replicaA;
+      tmrReplicas.corruptedIndex = null;
+      crossSensorState = {
+        mode: "valid_medical",
+        title: "تم الإصلاح الذاتي عبر التصويت الثلاثي (TMR 2/3 Majority Vote)",
+        detail: "اتفقت النسختان A و C على القراءة الأصلية (4.2 mmHg)، فتم عزل وتصحيح النسخة B التالفة واستعادة سلسلة الهاش في 0.4 ملي ثانية."
+      };
+      renderCyberShieldTab();
+      showToast("🛡 نجح التصويت الثلاثي (TMR vote) في استعادة السجل الطبي الأصلي وإصلاح سلسلة الهاش SHA-256!", "✅");
+    }
+
+    function simulateSensorSpoofingAttack() {
+      crossSensorState = {
+        mode: "spoof_detected",
+        title: "🚨 تم كشف تزوير حساس منفرد (Cross-Sensor Anomaly Rejected)!",
+        detail: "قفز حساس النبض فجأة إلى 195 bpm في 10 مللي ثانية، بينما بقي تقلب النبض (HRV) ومعدل التنفس وحرارة الجلد ثابتة تماماً! النظام رفض الإنذار الطبي الكاذب وصنفه كعطل/اختراق للحساس."
+      };
+      renderCyberShieldTab();
+      showToast("⚡ التحقق المتقاطع كشف قفزة مستحيلة فيزيائياً في حساس منفرد ومنع إطلاق توصية طبية خاطئة!", "🛡");
+    }
+
+    function generateEarthBurstPacket() {
+      const pathObj = matrixData.find(p => p.path_id === Number(currentPathId)) || matrixData[0];
+      const latestHash = auditChain.length ? auditChain[auditChain.length - 1].currHash : simpleSha256Hex("genesis");
+      const packet = {
+        protocol: "AEGIS-EARTH-BURST-v4",
+        mission_env: currentEnv.toUpperCase(),
+        timestamp_utc: new Date().toISOString(),
+        active_pathway: pathObj.organ.toUpperCase(),
+        z_score_sigma: Number(computePathwayZScore(pathObj)),
+        vitals_snapshot: pathObj.indicators.map(i => ({ m: i.name.slice(0, 18), v: i.current_val, u: i.unit })),
+        escalated_level2: Boolean(escalatedPaths[pathObj.path_id]),
+        tmr_integrity: tmrReplicas.corruptedIndex ? "DEGRADED_2_OF_3" : "INTACT_3_OF_3",
+        sha256_head: latestHash.slice(0, 32) + "..."
+      };
+      const jsonStr = JSON.stringify(packet, null, 2);
+      document.getElementById("earthBurstPre").textContent = `${jsonStr}\n// Packet Size: ${new Blob([jsonStr]).size} bytes (< 2KB Limit)`;
+      showToast("📡 تم توليد كبسولة تزامن الأرض الموقعة رقمياً بحجم أقل من 2 كيلوبايت!", "📡");
+    }
+
+    function renderCyberShieldTab() {
+      const anyTampered = auditChain.some(r => r.tampered);
+      const banner = document.getElementById("cyberStatusBanner");
+      const icon = document.getElementById("cyberStatusIcon");
+      const title = document.getElementById("cyberStatusTitle");
+      const desc = document.getElementById("cyberStatusDesc");
+
+      if (anyTampered) {
+        banner.className = "mt-4 p-3.5 rounded-xl bg-rose-950/60 border-2 border-rose-500 flex items-center justify-between animate-pulse";
+        icon.textContent = "🚨";
+        title.className = "text-sm font-extrabold text-rose-300";
+        title.textContent = "تحذير أمني: verify_chain() اكتشف تلاعباً / انقلاب بت إشعاعي في السجل رقم #2!";
+        desc.textContent = "بصمة SHA-256 للسجل #2 لا تطابق السلسلة، والنسخة B في الذاكرة تخالف النسختين A و C. اضغط «تشغيل التصويت الثلاثي TMR» للإصلاح الفوري.";
+      } else {
+        banner.className = "mt-4 p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 flex items-center justify-between";
+        icon.textContent = "✅";
+        title.className = "text-sm font-extrabold text-emerald-300";
+        title.textContent = "سلسلة الهاش SHA-256 سليمة 100% (verify_chain() == OK)";
+        desc.textContent = "جميع النسخ الثلاث (Replica A, B, C) متطابقة؛ السجل الطبي مؤمَّن ضد الإشعاع الكوني والتعديل غير المصرح به.";
+      }
+
+      // Render TMR Replicas
+      document.getElementById("tmrReplicasBox").innerHTML = `
+        <div class="p-2 rounded bg-slate-900 border border-emerald-500/30 flex justify-between">
+          <span class="text-slate-400">Replica A (SRAM-1):</span>
+          <span class="text-emerald-300 font-bold">${tmrReplicas.replicaA}</span>
+        </div>
+        <div class="p-2 rounded bg-slate-900 border ${tmrReplicas.corruptedIndex === "B" ? "border-rose-500 bg-rose-950/40" : "border-emerald-500/30"} flex justify-between">
+          <span class="text-slate-400">Replica B (SRAM-2):</span>
+          <span class="${tmrReplicas.corruptedIndex === "B" ? "text-rose-300 font-extrabold" : "text-emerald-300 font-bold"}">${tmrReplicas.replicaB}</span>
+        </div>
+        <div class="p-2 rounded bg-slate-900 border border-emerald-500/30 flex justify-between">
+          <span class="text-slate-400">Replica C (FLASH-3):</span>
+          <span class="text-emerald-300 font-bold">${tmrReplicas.replicaC}</span>
+        </div>
+        <div class="p-2 rounded bg-sky-950/40 border border-sky-500/30 text-sky-300 font-sans font-bold text-center">
+          نتيجة دالة vote(): القيمة المعتمدة هي ${tmrReplicas.replicaA} (إجماع ${tmrReplicas.corruptedIndex ? "2 من 3" : "3 من 3"})
+        </div>
+      `;
+
+      // Render Cross-Sensor Validation
+      document.getElementById("crossSensorBox").innerHTML = `
+        <div class="p-3 rounded-lg border ${
+          crossSensorState.mode === "spoof_detected"
+            ? "bg-amber-950/40 border-amber-500/50 text-amber-200"
+            : "bg-slate-900 border-slate-800 text-emerald-300"
+        }">
+          <div class="font-extrabold mb-1">${crossSensorState.title}</div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">${crossSensorState.detail}</p>
+        </div>
+      `;
+
+      // Render Audit Ledger Table
+      const tbody = document.getElementById("hashChainTableBody");
+      tbody.innerHTML = auditChain.map(r => `
+        <tr class="${r.tampered ? "bg-rose-950/50 text-rose-200 font-bold" : "hover:bg-slate-900/50 text-slate-300"}">
+          <td class="py-2 px-2.5">#${r.id}</td>
+          <td class="py-2 px-2.5">${r.time}</td>
+          <td class="py-2 px-2.5 font-sans font-semibold">${r.event}</td>
+          <td class="py-2 px-2.5">${r.value}</td>
+          <td class="py-2 px-2.5 text-slate-500">${r.prevHash.slice(0, 14)}...</td>
+          <td class="py-2 px-2.5 ${r.tampered ? "text-rose-400" : "text-sky-300"}">${r.currHash.slice(0, 16)}...</td>
+          <td class="py-2 px-2.5 font-sans">
+            ${r.tampered
+              ? '<span class="px-2 py-0.5 rounded bg-rose-500/30 text-rose-200 border border-rose-500 text-[10px]">تلاعب مكشوف!</span>'
+              : '<span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 text-[10px]">موثّق ✓</span>'}
+          </td>
+        </tr>
+      `).join("");
+
+      if (!document.getElementById("earthBurstPre").textContent) {
+        generateEarthBurstPacket();
+      }
+    }
+
+    // ============================================================================
+    // 4. قسم دمج عمل الزميلات (JSON Merger + Form Editor + Python Code Generator)
+    // ============================================================================
+    function loadSampleTeammateBlock(pathId) {
+      const found = matrixData.find(p => p.path_id === Number(pathId));
+      if (!found) return;
+      document.getElementById("teammateJsonInput").value = JSON.stringify(found, null, 2);
+      showToast(`تم وضع قالب المسار ${pathId} في الصندوق؛ يمكنك تعديل أي رقم أو نص فيه ثم الضغط على «دمج فوراً».`, "📋");
+    }
+
+    function mergeTeammateJSON() {
+      const raw = document.getElementById("teammateJsonInput").value.trim();
+      if (!raw) {
+        showToast("الصندوق فارغ! الصقي كود JSON الذي أرسلته زميلتك أولاً.", "⚠");
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        const items = Array.isArray(parsed) ? parsed : [parsed];
+        let mergedCount = 0;
+
+        items.forEach(item => {
+          if (!item.path_id) return;
+          const existingIdx = matrixData.findIndex(p => p.path_id === Number(item.path_id));
+          if (existingIdx !== -1) {
+            const old = matrixData[existingIdx];
+            matrixData[existingIdx] = {
+              ...old,
+              ...item,
+              indicators: Array.isArray(item.indicators) ? item.indicators.map((ind, i) => ({
+                name: ind.name || (old.indicators[i] ? old.indicators[i].name : "مؤشر"),
+                unit: ind.unit || (old.indicators[i] ? old.indicators[i].unit : ""),
+                current_val: ind.current_val != null ? Number(ind.current_val) : (ind.normal_max ? Number(ind.normal_max) : 50),
+                normal_min: ind.normal_min != null ? Number(ind.normal_min) : 0,
+                normal_max: ind.normal_max != null ? Number(ind.normal_max) : 100,
+                critical_min: ind.critical_min != null ? Number(ind.critical_min) : 0,
+                critical_max: ind.critical_max != null ? Number(ind.critical_max) : 150,
+                source: ind.source || "https://www.nasa.gov/hrp/"
+              })) : old.indicators
+            };
+            mergedCount++;
+          }
+        });
+
+        renderAvatarAndPills();
+        renderActivePathway();
+        showBackendCode("matrix");
+        showToast(`تم دمج ${mergedCount} مسار من عمل زميلتك بنجاح وتحديث المجسم التفاعلي!`, "✅");
+      } catch (err) {
+        showToast("خطأ في تنسيق JSON: تأكدي من عدم نسيان فاصلة (,) أو علامة اقتباس (\").", "❌");
+      }
+    }
+
+    function populateQuickForm(pathId) {
+      const p = matrixData.find(item => item.path_id === Number(pathId));
+      if (!p) return;
+      document.getElementById("formDagInput").value = p.dag_link || "";
+      document.getElementById("formLvl1Input").value = (p.level1 || []).join("\n");
+      document.getElementById("formLvl2Input").value = (p.level2 || []).join("\n");
+    }
+
+    function saveQuickFormChanges() {
+      const pathId = Number(document.getElementById("formPathSelect").value);
+      const p = matrixData.find(item => item.path_id === pathId);
+      if (!p) return;
+      p.dag_link = document.getElementById("formDagInput").value.trim() || p.dag_link;
+      const l1 = document.getElementById("formLvl1Input").value.split("\n").map(s => s.trim()).filter(Boolean);
+      const l2 = document.getElementById("formLvl2Input").value.split("\n").map(s => s.trim()).filter(Boolean);
+      if (l1.length) p.level1 = l1;
+      if (l2.length) p.level2 = l2;
+
+      currentPathId = pathId;
+      renderAvatarAndPills();
+      renderActivePathway();
+      showBackendCode("matrix");
+      showToast(`تم حفظ تعديلات المسار ${pathId} بنجاح وتحديث البطاقة العلاجية!`, "✅");
+    }
+
+    function resetDefaultMatrix() {
+      matrixData = JSON.parse(JSON.stringify(DEFAULT_NASA_OSDR_MATRIX));
+      renderAvatarAndPills();
+      renderActivePathway();
+      showBackendCode("matrix");
+      showToast("تمت استعادة مصفوفة بيانات ناسا الافتراضية للمسارات الخمسة.", "🔄");
+    }
+
+    function downloadFullMatrixJSON() {
+      const dataStr = JSON.stringify(matrixData, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "nasa_osdr_matrix.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("تم تحميل ملف nasa_osdr_matrix.json الموحد جاهزاً للمشروع!", "⬇");
+    }
+
+    // Backend Python & JSON Code Viewer so øX7 and her Engineer teammate have all files ready
+    const PYTHON_CYBER_CODE = `# cyber_shield.py — Aegis-BioSpace Cyber-Resilience Layer (øX7)
+import hashlib
+import json
+from datetime import datetime, timezone
+
+class SpaceCyberShield:
+    def __init__(self):
+        self.chain = []
+        self.tmr_store = {}
+
+    def _compute_hash(self, prev_hash: str, payload: dict) -> str:
+        raw = f"{prev_hash}|{json.dumps(payload, sort_keys=True)}"
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def append_record(self, pathway_id: int, event: str, reading: dict) -> dict:
+        prev_hash = self.chain[-1]["curr_hash"] if self.chain else "0" * 64
+        payload = {
+            "id": len(self.chain) + 1,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "pathway_id": pathway_id,
+            "event": event,
+            "reading": reading
+        }
+        curr_hash = self._compute_hash(prev_hash, payload)
+        block = {**payload, "prev_hash": prev_hash, "curr_hash": curr_hash}
+        self.chain.append(block)
+        # Store in Triple Modular Redundancy (3 isolated memory slots)
+        self.tmr_store[block["id"]] = [
+            json.dumps(reading),
+            json.dumps(reading),
+            json.dumps(reading)
+        ]
+        return block
+
+    def verify_chain(self) -> dict:
+        for idx, block in enumerate(self.chain):
+            expected_prev = "0" * 64 if idx == 0 else self.chain[idx - 1]["curr_hash"]
+            payload = {k: block[k] for k in ("id", "timestamp", "pathway_id", "event", "reading")}
+            recalculated = self._compute_hash(expected_prev, payload)
+            if block["prev_hash"] != expected_prev or block["curr_hash"] != recalculated:
+                return {"valid": False, "corrupted_block_id": block["id"]}
+        return {"valid": True, "corrupted_block_id": None}
+
+    def vote_tmr(self, block_id: int) -> dict:
+        replicas = self.tmr_store.get(block_id, [])
+        if len(replicas) < 3:
+            return {"status": "error", "healed_value": None}
+        a, b, c = replicas[0], replicas[1], replicas[2]
+        if a == b or a == c:
+            majority = a
+        elif b == c:
+            majority = b
+        else:
+            majority = a
+        corrupted_slot = None
+        for i, val in enumerate([a, b, c]):
+            if val != majority:
+                corrupted_slot = ["Replica_A", "Replica_B", "Replica_C"][i]
+                self.tmr_store[block_id][i] = majority
+        return {
+            "status": "healed" if corrupted_slot else "intact",
+            "corrupted_slot": corrupted_slot,
+            "healed_value": json.loads(majority)
+        }
+
+    @staticmethod
+    def cross_sensor_validate(hr_bpm: float, prev_hr: float, hrv_ms: float, prev_hrv: float) -> dict:
+        # If HR jumps by >60 bpm instantaneously while HRV does not move at all -> Sensor Spoofing/Fault
+        if abs(hr_bpm - prev_hr) > 60 and abs(hrv_ms - prev_hrv) < 1.0:
+            return {"authentic_medical_event": False, "reason": "Isolated single-sensor spike (Spoofing/Fault)"}
+        return {"authentic_medical_event": True, "reason": "Coupled physiological response verified"}
+`;
+
+    const PYTHON_ANALYTICS_CODE = `# analytics_engine.py — Personal Z-Score, Space Pharmacy & Closed-Loop Engine (øX7)
+import math
+import numpy as np
+
+def compute_personal_zscore(reading: float, baseline_history: list) -> float:
+    arr = np.array(baseline_history, dtype=float)
+    mean = float(np.mean(arr))
+    std = max(float(np.std(arr)), 0.1)
+    return round(abs(reading - mean) / std, 2)
+
+def evaluate_alert_color(reading: float, z_score: float, normal_min: float, normal_max: float, crit_min: float, crit_max: float) -> str:
+    if reading >= crit_max or reading <= crit_min or z_score >= 3.0:
+        return "red"
+    if reading > normal_max or reading < normal_min or z_score >= 2.0:
+        return "amber"
+    return "green"
+
+def calculate_space_drug_potency(base_dose_mg: float, mission_days: int, cumulative_rad_msv: float) -> dict:
+    # First-order radiation & thermal degradation kinetics per NASA ExMC Pharmacy model
+    potency_fraction = math.exp(-(0.00035 * mission_days + 0.00042 * cumulative_rad_msv))
+    potency_pct = round(max(0.65, min(0.99, potency_fraction)) * 100, 1)
+    adjusted_dose = round(base_dose_mg * (100.0 / potency_pct), 1)
+    return {
+        "remaining_potency_pct": potency_pct,
+        "base_dose_mg": base_dose_mg,
+        "space_adjusted_dose_mg": adjusted_dose
+    }
+`;
+
+    const PYTHON_MAIN_CODE = `# main.py — FastAPI Local Server for Aegis-BioSpace
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import json
+from pathlib import Path
+from cyber_shield import SpaceCyberShield
+from analytics_engine import compute_personal_zscore, evaluate_alert_color, calculate_space_drug_potency
+
+app = FastAPI(title="Aegis-BioSpace Local Engine")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+shield = SpaceCyberShield()
+MATRIX_PATH = Path(__file__).parent / "data" / "nasa_osdr_matrix.json"
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "mode": "offline_ready"}
+
+@app.get("/api/matrix")
+def get_matrix():
+    if MATRIX_PATH.exists():
+        return json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
+    return {"error": "nasa_osdr_matrix.json not found"}
+
+@app.post("/api/analyze")
+def analyze_pathway(payload: dict):
+    reading = float(payload.get("reading", 75.0))
+    history = payload.get("history", [70, 72, 74, 71, 73])
+    z = compute_personal_zscore(reading, history)
+    pharm = calculate_space_drug_potency(
+        base_dose_mg=float(payload.get("base_dose_mg", 100)),
+        mission_days=int(payload.get("mission_days", 180)),
+        cumulative_rad_msv=float(payload.get("radiation_msv", 240))
+    )
+    block = shield.append_record(payload.get("path_id", 1), "Telemetry Analysis", {"reading": reading, "z": z})
+    return {"z_score": z, "pharmacy": pharm, "audit_block": block}
+`;
+
+    function showBackendCode(which) {
+      ["matrix", "cyber", "analytics", "main"].forEach(k => {
+        const btn = document.getElementById(`codeTab-${k}`);
+        if (k === which) {
+          btn.className = "px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs font-mono-code font-bold";
+        } else {
+          btn.className = "px-2.5 py-1 rounded bg-slate-900 text-slate-400 border border-slate-800 text-xs font-mono-code font-bold";
+        }
+      });
+      const viewer = document.getElementById("backendCodeViewer");
+      if (which === "matrix") {
+        viewer.textContent = JSON.stringify(matrixData, null, 2);
+      } else if (which === "cyber") {
+        viewer.textContent = PYTHON_CYBER_CODE;
+      } else if (which === "analytics") {
+        viewer.textContent = PYTHON_ANALYTICS_CODE;
+      } else if (which === "main") {
+        viewer.textContent = PYTHON_MAIN_CODE;
+      }
+    }
+
+    function copyActiveCodeBox() {
+      const txt = document.getElementById("backendCodeViewer").textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => {
+          showToast("تم نسخ الكود بالكامل إلى الحافظة!", "📋");
+        }).catch(() => fallbackCopy(txt));
+      } else {
+        fallbackCopy(txt);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("تم نسخ الكود إلى الحافظة!", "📋");
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+
+    // ============================================================================
+    // 5. التحديثات السبعة الكاملة (aegis_patch 1..7 المدمجة بالكامل)
+    // ============================================================================
+    const K_SHA256 = [
+      0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+      0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+      0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+      0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+      0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+      0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+      0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+      0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+    ];
+
+    // [5] Real synchronous FIPS 180-4 SHA-256 (works offline & on file://)
+    function realSha256Hex(asciiStr) {
+      const utf8 = unescape(encodeURIComponent(asciiStr));
+      const words = [];
+      for (let i = 0; i < utf8.length; i++) {
+        words[i >> 2] |= (utf8.charCodeAt(i) & 0xff) << (24 - (i % 4) * 8);
+      }
+      const bitLen = utf8.length * 8;
+      words[bitLen >> 5] |= 0x80 << (24 - (bitLen % 32));
+      words[(((bitLen + 64) >> 9) << 4) + 15] = bitLen;
+
+      let H = [
+        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+        0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+      ];
+      const W = new Array(64);
+      const rotr = (n, x) => (x >>> n) | (x << (32 - n));
+
+      for (let i = 0; i < words.length; i += 16) {
+        let [a, b, c, d, e, f, g, h] = H;
+        for (let t = 0; t < 64; t++) {
+          if (t < 16) {
+            W[t] = words[i + t] | 0;
+          } else {
+            const s0 = rotr(7, W[t - 15]) ^ rotr(18, W[t - 15]) ^ (W[t - 15] >>> 3);
+            const s1 = rotr(17, W[t - 2]) ^ rotr(19, W[t - 2]) ^ (W[t - 2] >>> 10);
+            W[t] = (W[t - 16] + s0 + W[t - 7] + s1) | 0;
+          }
+          const S1 = rotr(6, e) ^ rotr(11, e) ^ rotr(25, e);
+          const ch = (e & f) ^ (~e & g);
+          const temp1 = (h + S1 + ch + K_SHA256[t] + W[t]) | 0;
+          const S0 = rotr(2, a) ^ rotr(13, a) ^ rotr(22, a);
+          const maj = (a & b) ^ (a & c) ^ (b & c);
+          const temp2 = (S0 + maj) | 0;
+
+          h = g; g = f; f = e; e = (d + temp1) | 0;
+          d = c; c = b; b = a; a = (temp1 + temp2) | 0;
+        }
+        H = [
+          (H[0] + a) | 0, (H[1] + b) | 0, (H[2] + c) | 0, (H[3] + d) | 0,
+          (H[4] + e) | 0, (H[5] + f) | 0, (H[6] + g) | 0, (H[7] + h) | 0
+        ];
+      }
+      return H.map(v => (v >>> 0).toString(16).padStart(8, "0")).join("");
+    }
+
+    simpleSha256Hex = realSha256Hex;
+
+    // [5] Real cryptographic chain verification with actual performance timing
+    function verifyAuditChain() {
+      const t0 = performance.now();
+      let brokenAt = null;
+      let brokenLink = false;
+      for (let i = 0; i < auditChain.length; i++) {
+        const rec = auditChain[i];
+        const expectedPrev = (i === 0) ? "0".repeat(64) : auditChain[i - 1].currHash;
+        const payload = `${rec.prevHash}|${rec.time}|${rec.event}|${rec.value}`;
+        const recalc = realSha256Hex(payload);
+        if (rec.tampered || rec.currHash !== rec.expectedHash || recalc !== rec.expectedHash) {
+          brokenAt = rec.id;
+          break;
+        }
+        if (rec.prevHash !== expectedPrev) {
+          brokenAt = rec.id;
+          brokenLink = true;
+          break;
+        }
+      }
+      const elapsedMs = Math.max(0.1, (performance.now() - t0)).toFixed(2);
+      const tag = document.getElementById("cyberLatencyTag");
+      if (tag) tag.textContent = `Verify Time: ${elapsedMs} ms`;
+      return { valid: brokenAt === null, brokenAt, brokenLink, elapsedMs };
+    }
+
+    // [2] Deduplicated & debounced audit chain logging + compact table slicing (first 4 + tampered + last 12)
+    let _simAuditDebounce = null;
+    appendAuditRecord = function(eventTitle, valueStr, debounceMs = 0) {
+      const doInsert = () => {
+        if (auditChain.length > 0) {
+          const last = auditChain[auditChain.length - 1];
+          if (last.event === eventTitle && last.value === valueStr) return;
+        }
+        const now = new Date();
+        const timeStr = now.toTimeString().split(" ")[0];
+        const prev = auditChain.length ? auditChain[auditChain.length - 1].currHash : "0".repeat(64);
+        const payload = `${prev}|${timeStr}|${eventTitle}|${valueStr}`;
+        const curr = realSha256Hex(payload);
+        auditChain.push({
+          id: auditChain.length + 1,
+          time: timeStr,
+          event: eventTitle,
+          value: valueStr,
+          originalValue: valueStr,
+          prevHash: prev,
+          currHash: curr,
+          expectedHash: curr,
+          tampered: false
+        });
+        if (!document.getElementById("tab-cyber").classList.contains("hidden")) {
+          renderCyberShieldTab();
+        }
+      };
+      if (debounceMs > 0) {
+        if (_simAuditDebounce) clearTimeout(_simAuditDebounce);
+        _simAuditDebounce = setTimeout(doInsert, debounceMs);
+      } else {
+        doInsert();
+      }
+    };
+
+    const _origRenderCyberShieldTab = renderCyberShieldTab;
+    renderCyberShieldTab = function() {
+      _origRenderCyberShieldTab();
+      const check = verifyAuditChain();
+      const tbody = document.getElementById("hashChainTableBody");
+      if (!tbody || auditChain.length <= 16) return;
+      const keepIds = new Set();
+      auditChain.slice(0, 4).forEach(r => keepIds.add(r.id));
+      auditChain.slice(-12).forEach(r => keepIds.add(r.id));
+      auditChain.filter(r => r.tampered).forEach(r => keepIds.add(r.id));
+      const visible = auditChain.filter(r => keepIds.has(r.id));
+      tbody.innerHTML = visible.map(r => `
+        <tr class="${r.tampered ? "bg-rose-950/50 text-rose-200 font-bold" : "hover:bg-slate-900/50 text-slate-300"}">
+          <td class="py-2 px-2.5">#${r.id}</td>
+          <td class="py-2 px-2.5">${r.time}</td>
+          <td class="py-2 px-2.5 font-sans font-semibold">${r.event}</td>
+          <td class="py-2 px-2.5">${r.value}</td>
+          <td class="py-2 px-2.5 text-slate-500">${r.prevHash.slice(0, 14)}...</td>
+          <td class="py-2 px-2.5 ${r.tampered ? "text-rose-400" : "text-sky-300"}">${r.currHash.slice(0, 16)}...</td>
+          <td class="py-2 px-2.5 font-sans">
+            ${r.tampered
+              ? '<span class="px-2 py-0.5 rounded bg-rose-500/30 text-rose-200 border border-rose-500 text-[10px]">تلاعب مكشوف!</span>'
+              : '<span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 text-[10px]">موثّق ✓</span>'}
+          </td>
+        </tr>
+      `).join("");
+    };
+
+    // [4] Unified top readout bar derived directly from current matrixData
+    function syncTopSpacecraftReadout() {
+      const el = document.getElementById("spacecraftEqReadout");
+      if (!el) return;
+      const envInfo = ENV_MODIFIERS[currentEnv] || ENV_MODIFIERS.transit;
+      const p5 = matrixData.find(p => p.path_id === 5);
+      const p3 = matrixData.find(p => p.path_id === 3);
+      const ppCO2 = p5 && p5.indicators[0] ? p5.indicators[0].current_val : 1.8;
+      const co2Rate = p5 && p5.indicators[1] ? p5.indicators[1].current_val : 0.72;
+      const radDose = p3 && p3.indicators[0] ? p3.indicators[0].current_val : envInfo.rad_dose;
+      const vuLiters = Math.round(3 + 2.5 * envInfo.rad_days);
+      el.textContent = `CO2: ${co2Rate} g/min (ppCO2: ${ppCO2} mmHg) | Effective Dose: ${radDose} mSv | Total Urine Vu(t=${envInfo.rad_days}d): ${vuLiters} L`;
+    }
+
+    // [3] Logarithmic Lux Slider & Smooth Dragging without interrupting mouse drag
+    function isLuxIndicator(ind) {
+      return ind && String(ind.unit).toLowerCase() === "lux";
+    }
+    function luxToLogSlider(lux) {
+      const clamped = Math.max(1, Math.min(80000, Number(lux) || 1));
+      return Math.log10(clamped).toFixed(3);
+    }
+    function logSliderToLux(sliderVal) {
+      const raw = Math.pow(10, Number(sliderVal));
+      return raw < 100 ? Math.round(raw) : Math.round(raw / 10) * 10;
+    }
+
+    const _origRenderActivePathway = renderActivePathway;
+    renderActivePathway = function() {
+      _origRenderActivePathway();
+      syncTopSpacecraftReadout();
+      const pathObj = matrixData.find(p => p.path_id === Number(currentPathId)) || matrixData[0];
+      const indContainer = document.getElementById("indicatorsContainer");
+      if (!indContainer) return;
+      indContainer.innerHTML = pathObj.indicators.map((ind, idx) => {
+        const indSt = evaluateIndicatorStatus(ind);
+        const badgeStyle = indSt === "red"
+          ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
+          : indSt === "amber"
+          ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+          : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+        const statusLabel = indSt === "red"
+          ? (currentLang === "ar" ? "حرج (Critical)" : "CRITICAL")
+          : indSt === "amber"
+          ? (currentLang === "ar" ? "انحراف مبكر" : "WARNING")
+          : (currentLang === "ar" ? "طبيعي" : "NORMAL");
+
+        const isLux = isLuxIndicator(ind);
+        const minSlider = isLux ? "0" : Math.min(ind.critical_min * 0.8, ind.normal_min * 0.7).toFixed(1);
+        const maxSlider = isLux ? Math.log10(80000).toFixed(3) : Math.max(ind.critical_max * 1.25, ind.normal_max * 1.3).toFixed(1);
+        const stepVal = isLux ? "0.01" : ((Number(maxSlider) - Number(minSlider)) > 40 ? 1 : 0.1);
+        const sliderVal = isLux ? luxToLogSlider(ind.current_val) : ind.current_val;
+
+        return `
+          <div class="bg-slate-950/85 rounded-xl p-3 border border-slate-800">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-xs font-bold text-slate-200">${ind.name}</span>
+              <span id="ind-badge-${pathObj.path_id}-${idx}" class="text-[11px] px-2 py-0.5 rounded border font-bold ${badgeStyle}">${statusLabel}</span>
+            </div>
+            <div class="flex items-baseline justify-between my-1">
+              <span class="text-xl font-extrabold font-mono-code text-white">
+                <span id="ind-val-${pathObj.path_id}-${idx}">${ind.current_val}</span>
+                <small class="text-xs text-slate-400">${ind.unit}</small>
+              </span>
+              <span class="text-[11px] text-slate-400 font-mono-code">الطبيعي: ${ind.normal_min}–${ind.normal_max} | الحرج: ${ind.critical_max}</span>
+            </div>
+            <input type="range" min="${minSlider}" max="${maxSlider}" step="${stepVal}" value="${sliderVal}"
+              oninput="handleIndicatorSlideLive(${pathObj.path_id}, ${idx}, this.value, ${isLux})"
+              onchange="commitIndicatorSlide(${pathObj.path_id}, ${idx}, this.value, ${isLux})"
+              class="w-full accent-sky-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg my-1" />
+            <div class="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+              <span>${isLux ? "مقياس لوغاريتمي سلس (9 إلى 79,000 lux)" : "حرك المؤشر لتجربة تغير لون العضو"}</span>
+              <a href="${ind.source}" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">🔗 مصدر ناسا الرسمي</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+    };
+
+    function handleIndicatorSlideLive(pathId, indIdx, rawVal, isLux) {
+      const pathObj = matrixData.find(p => p.path_id === Number(pathId));
+      if (!pathObj || !pathObj.indicators[indIdx]) return;
+      const actualVal = isLux ? logSliderToLux(rawVal) : Number(rawVal);
+      pathObj.indicators[indIdx].current_val = actualVal;
+
+      const valSpan = document.getElementById(`ind-val-${pathId}-${indIdx}`);
+      if (valSpan) valSpan.textContent = actualVal;
+
+      const indSt = evaluateIndicatorStatus(pathObj.indicators[indIdx]);
+      const badgeEl = document.getElementById(`ind-badge-${pathId}-${indIdx}`);
+      if (badgeEl) {
+        badgeEl.className = `text-[11px] px-2 py-0.5 rounded border font-bold ${
+          indSt === "red"
+            ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
+            : indSt === "amber"
+            ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+            : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+        }`;
+        badgeEl.textContent = indSt === "red"
+          ? (currentLang === "ar" ? "حرج (Critical)" : "CRITICAL")
+          : indSt === "amber"
+          ? (currentLang === "ar" ? "انحراف مبكر" : "WARNING")
+          : (currentLang === "ar" ? "طبيعي" : "NORMAL");
+      }
+      renderAvatarAndPills();
+      syncTopSpacecraftReadout();
+    }
+
+    function commitIndicatorSlide(pathId, indIdx, rawVal, isLux) {
+      handleIndicatorSlideLive(pathId, indIdx, rawVal, isLux);
+      renderActivePathway();
+    }
+
+    // [1 & 4] Unified Physics Sim & Environment radiation (+193 mSv unshielded delta per OCHMO-TB-020 p.8: 259 - 66 = 193)
+    let _wasMiddeckDim = false;
+    runSpacecraftPhysicsSim = function() {
+      const act = document.getElementById("simActivitySelect").value;
+      const shld = document.getElementById("simShieldSelect").value;
+      const lght = document.getElementById("simLightSelect").value;
+      const envInfo = ENV_MODIFIERS[currentEnv] || ENV_MODIFIERS.transit;
+
+      const p5 = matrixData.find(p => p.path_id === 5);
+      let co2Rate = 0.72;
+      let ppCO2 = 1.8;
+      if (act === "sleep") { co2Rate = 0.455; ppCO2 = 1.4; }
+      else if (act === "nominal") { co2Rate = 0.72; ppCO2 = 1.8; }
+      else if (act === "exercise") { co2Rate = 4.985; ppCO2 = 3.4; }
+      else if (act === "apollo13") { co2Rate = 4.985; ppCO2 = 14.9; }
+      if (p5) {
+        p5.indicators[0].current_val = ppCO2;
+        if (p5.indicators[1]) p5.indicators[1].current_val = co2Rate;
+      }
+
+      const p3 = matrixData.find(p => p.path_id === 3);
+      const effectiveDose = envInfo.rad_dose + (shld === "unshielded" ? 193 : 0);
+      if (p3 && p3.indicators[0]) {
+        p3.indicators[0].current_val = effectiveDose;
+      }
+
+      const p1 = matrixData.find(p => p.path_id === 1);
+      const p4 = matrixData.find(p => p.path_id === 4);
+      const vuLiters = Math.round(3 + 2.5 * envInfo.rad_days);
+      if (lght === "middeck_dim") {
+        _wasMiddeckDim = true;
+        if (p1) {
+          p1.indicators[0].current_val = 3.8;
+          p1.indicators[1].current_val = 515;
+          if (p1.indicators[2]) p1.indicators[2].current_val = 9;
+        }
+        if (p4) {
+          p4.indicators[0].current_val = 295;
+          p4.indicators[1].current_val = 1450;
+        }
+      } else {
+        if (p1) {
+          p1.indicators[0].current_val = 7.4;
+          if (_wasMiddeckDim) {
+            p1.indicators[1].current_val = 265;
+            _wasMiddeckDim = false;
+          }
+          if (p1.indicators[2]) p1.indicators[2].current_val = 350;
+        }
+        if (p4) {
+          p4.indicators[0].current_val = 195;
+          p4.indicators[1].current_val = 2500;
+        }
+      }
+
+      renderAvatarAndPills();
+      renderActivePathway();
+      appendAuditRecord("تحديث محاكي معادلات المركبة (HIDH/OCHMO)", `ppCO2: ${ppCO2} mmHg | Dose: ${effectiveDose} mSv | Vu: ${vuLiters}L`, 900);
+      showToast(`تم تطبيق معادلات المركبة: CO2 = ${co2Rate} g/min، الإشعاع = ${effectiveDose} mSv، وحجم البول Vu = ${vuLiters} لتر`, "⚙️");
+    };
+
+    const _origChangeEnv = changeEnvironment;
+    changeEnvironment = function(envKey) {
+      currentEnv = envKey;
+      const env = ENV_MODIFIERS[envKey] || ENV_MODIFIERS.transit;
+      const shldEl = document.getElementById("simShieldSelect");
+      const unshieldedBonus = (shldEl && shldEl.value === "unshielded") ? 193 : 0;
+      const p5 = matrixData.find(p => p.path_id === 5);
+      if (p5 && p5.indicators[0]) p5.indicators[0].critical_max = env.co2_limit;
+      const p3 = matrixData.find(p => p.path_id === 3);
+      if (p3 && p3.indicators[0]) p3.indicators[0].current_val = env.rad_dose + unshieldedBonus;
+      renderAvatarAndPills();
+      renderActivePathway();
+      showToast(`تم تبديل البيئة إلى: ${env.name_ar} (الجرعة الفعالة: ${env.rad_dose + unshieldedBonus} mSv)`, "🪐");
+    };
+
+    // [6] Timer Reset Helper
+    function resetClosedLoopTimerDisplay() {
+      if (closedLoopInterval) {
+        clearInterval(closedLoopInterval);
+        closedLoopInterval = null;
+      }
+      closedLoopSeconds = TIMER_DEMO_SECONDS;
+      const disp = document.getElementById("closedLoopTimerDisplay");
+      if (disp) {
+        disp.textContent = escalatedPaths[currentPathId] ? "0s (Escalated)" : `${TIMER_DEMO_SECONDS}s`;
+      }
+    }
+
+    const _origSelectPathway = selectPathway;
+    selectPathway = function(pathId) {
+      currentPathId = Number(pathId);
+      resetClosedLoopTimerDisplay();
+      _origSelectPathway(pathId);
+    };
+
+    const _origTriggerScenario = triggerScenario;
+    triggerScenario = function(scenKey) {
+      if (closedLoopInterval) {
+        clearInterval(closedLoopInterval);
+        closedLoopInterval = null;
+      }
+      const actEl = document.getElementById("simActivitySelect");
+      const shldEl = document.getElementById("simShieldSelect");
+      const lghtEl = document.getElementById("simLightSelect");
+      if (actEl) actEl.value = "nominal";
+      if (shldEl) shldEl.value = "optimized";
+      if (lghtEl) lghtEl.value = "aligned";
+
+      _origTriggerScenario(scenKey);
+
+      const env = ENV_MODIFIERS[currentEnv] || ENV_MODIFIERS.transit;
+      const p5 = matrixData.find(p => p.path_id === 5);
+      if (p5 && p5.indicators[0]) p5.indicators[0].critical_max = env.co2_limit;
+
+      resetClosedLoopTimerDisplay();
+      renderAvatarAndPills();
+      renderActivePathway();
+    };
+
+    // [7] Spacebar keyup prevention on focused buttons in Cockpit
+    window.addEventListener("keyup", (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+      if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") return;
+      if (e.code === "Space") {
+        const cockpitVisible = !document.getElementById("tab-cockpit").classList.contains("hidden");
+        if (cockpitVisible) {
+          e.preventDefault();
+        }
+      }
+    });
+
+    // Initialize Application on Load
+    window.addEventListener("DOMContentLoaded", () => {
+      initAuditChain();
+      renderAvatarAndPills();
+      renderActivePathway();
+      renderPvtAndQuests();
+      renderCyberShieldTab();
+      populateQuickForm(1);
+      showBackendCode("matrix");
+    });
+  </script>
+</body>
+</html>

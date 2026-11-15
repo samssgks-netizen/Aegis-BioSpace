@@ -1,0 +1,142 @@
+[
+  {
+    "path_id": 3,
+    "name_ar": "المناعة والأيض والإشعاع الفضائي (OCHMO-TB-020 + ExMC Med02 + HRP Altered Immunity)",
+    "name_en": "Immune System, Metabolism & Space Radiation (OCHMO-TB-020 & ExMC Med02)",
+    "organ": "blood",
+    "indicators": [
+      {
+        "name": "جرعة الإشعاع الفعالة (Effective Radiation Dose - OCHMO-TB-020)",
+        "unit": "mSv",
+        "current_val": 86,
+        "normal_min": 0,
+        "normal_max": 167,
+        "critical_min": 0,
+        "critical_max": 250,
+        "notes_ar": "ISS 180d = 77-86 mSv | Lunar 180d = 167 mSv | SPE Event Limit [V1 4031] = 250 mSv | Career Limit [V1 4030] = 600 mSv (3% REID)",
+        "source": "https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf"
+      },
+      {
+        "name": "معدل الإشعاع اليومي (Daily GCR/Surface Dose Rate - OCHMO-TB-020 p.4-6)",
+        "unit": "mSv/day",
+        "current_val": 0.5,
+        "normal_min": 0.1,
+        "normal_max": 0.8,
+        "critical_min": 0.0,
+        "critical_max": 1.3,
+        "notes_ar": "السطح الكوكبي < 0.8 mSv/day (المتوسط 0.5 mSv/day) | الفضاء العميق الحر < 1.3 إلى 1.5 mSv/day",
+        "source": "https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf"
+      },
+      {
+        "name": "سكر الدم الصائم وحرارة الجسم (Blood Sugar & Immune Fever Check)",
+        "unit": "mg/dL",
+        "current_val": 92,
+        "normal_min": 70,
+        "normal_max": 105,
+        "critical_min": 65,
+        "critical_max": 140,
+        "notes_ar": "مرتبط بتجارب Artemis II Immune Biomarkers و Food Physiology و مسحات الميكروبات في HERA",
+        "source": "https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/"
+      }
+    ],
+    "dag_link": "الأشعة الكونية (GCR 1.3 mSv/d) والعواصف الشمسية (SPE > 250 mSv) + تغير ميكروبات المقصورة (HERA) ← إجهاد تأكسدي وتثبيط المناعة (Altered Immunity) + تحلل المادة الفعالة للأدوية إشعاعياً (API Radiolysis - Du et al., 2011; Wotring, 2016)",
+    "dag_link_en": "GCR (1.3 mSv/d) & SPE (>250 mSv) + Closed-Habitat Microbiome Shift → Immune Dysregulation + Drug API Radiolysis (Du 2011; Wotring 2016)",
+    "level1": [
+      "إعادة تشكيل مخبأ العاصفة الإشعاعية (Storm Shelter Reconfiguration - OCHMO-TB-020 p.8-10): تكديس أكياس الماء والمؤن عالية الهيدروجين حول مقصورة الطاقم بسمك مكافئ 10-20 cm ماء، مما يخفض جرعة العاصفة الشمسية من 259 mSv إلى 65-83 mSv (بنسبة > 70%)!",
+      "إنهاء أي نشاط خارج المركبة (EVA Termination) خلال أقل من ساعتين عند رصد إنذار الجرعات الفوري (Real-Time Alert Dosimetry [V2 6100])",
+      "دعم المناعة والأيض: تطبيق نظام (Food Physiology & B-Complex) وأخذ مسحات ميكروبية دورية للمقصورة على غرار (HERA Microbial Tracking)"
+    ],
+    "level1_en": [
+      "Reconfigure Water-Bag Storm Shelter (10-20 cm water equivalent per OCHMO-TB-020 p.8): reduces capsule SPE dose from 214-259 mSv down to 65-83 mSv",
+      "Terminate EVA within <2 hours upon real-time dosimetry alert [V2 6100]",
+      "Initiate Food Physiology antioxidant & B-Complex countermeasure and HERA-protocol microbial swabbing"
+    ],
+    "level2": [
+      "الفحص الطيفي الفوري غير المتلف للدواء (ExMC Med02 Critical Question 4): فحص القرص بجهاز (Handheld Raman / FTIR Spectrometer) للتأكد من تركيز المادة الفعالة (API) وعدم تكون نواتج تحلل إشعاعي سامة (Substituted Anilines / Radiolysis Degradants - Question 5)",
+      "تطبيق جدول تعديل الجرعات للأدوية الآمنة منخفضة الفعالية (Verified as Safe - VAS Dosing Monograph - ExMC p.15)، أو طباعة قرص دوائي مخصص الجرعة في نقطة الرعاية بتقنية (Fused-Filament 3D Printing - Goyanes et al., 2014)"
+    ],
+    "level2_en": [
+      "Nondestructive real-time API check via Handheld Raman / FTIR Spectroscopy (ExMC Med02 Q4) to rule out toxic radiolysis degradants (PBPK model Q5)",
+      "Administer VAS Dosing Monograph compensated dose, or fabricate point-of-use tablet via Fused-Filament 3D Printing (Goyanes et al., 2014 - ExMC Q6-7)"
+    ],
+    "pharmacy": {
+      "formulary_tier": "Core Formulary (Top 20 Pyxis-Tracked - MED07) + Personalized (5 drugs) + Emergency Medicine (ExMC Fig. 3)",
+      "drug_name": "Antiviral / Antibiotic & Radioprotectant (Tested over 550 ISS days - Wotring 2016)",
+      "base_dose_mg": 500,
+      "potency_pct": 78.4,
+      "adjusted_dose_mg": 635,
+      "verification_method": "Handheld Raman (Hajjou & Lukulay 2014) + FTIR (Matkovic 2005) + Miniature Mass Spec (Keil 2007)",
+      "source": "https://ntrs.nasa.gov/citations/20170001651"
+    }
+  },
+  {
+    "path_id": 4,
+    "name_ar": "العظام والكلى وصحة الجهاز البولي (OCHMO-MTB-003 Rev A — طالب الكيمياء)",
+    "name_en": "Bone Resorption, Renal Stones & Urinary Health (OCHMO-MTB-003 Rev A)",
+    "organ": "bones",
+    "indicators": [
+      {
+        "name": "إفراز الكالسيوم البولي وفوق الإشباع (Urinary Calcium & Supersaturation)",
+        "unit": "mg/day",
+        "current_val": 195,
+        "normal_min": 100,
+        "normal_max": 240,
+        "critical_min": 80,
+        "critical_max": 281,
+        "notes_ar": "حصوات الكلى هي السبب #2 للإخلاء الطبي من ISS وتسمم الدم البولي (Urosepsis) هو السبب #3 (OCHMO-MTB-003 p.1). سُجلت 43 حادثة حصوات في 29 رائد فضاء!",
+        "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+      },
+      {
+        "name": "حصة الماء اليومية الإلزامية (Potable Hydration [V2 6109] & EVA [V2 11030])",
+        "unit": "mL/day",
+        "current_val": 2500,
+        "normal_min": 2500,
+        "normal_max": 3200,
+        "critical_min": 1600,
+        "critical_max": 4000,
+        "notes_ar": "الحد الأدنى الإلزامي في NASA-STD-3001 [V2 6109] هو 2500 mL/day لكل رائد + 240 mL/hour أثناء السير الفضائي EVA [V2 11030]",
+        "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+      },
+      {
+        "name": "حجم الحصوة الكلوية في سونار AMOS (Renal Stone Size Cut-Off - p.5, 11-12)",
+        "unit": "mm",
+        "current_val": 1.2,
+        "normal_min": 0.0,
+        "normal_max": 2.0,
+        "critical_min": 0.0,
+        "critical_max": 3.0,
+        "notes_ar": "الحصوة < 3 mm تمر تلقائياً بنسبة > 90% خلال ~7 أيام | الحصوة >= 3 mm هي الحد الفاصل للتدخل الجراحي/الموجي!",
+        "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+      }
+    ],
+    "dag_link": "انعدام الجاذبية ← ذوبان العظام ([V1 4027] هدف الحفاظ >= 95% للفقرات و90% لعنق الفخذ) + التوتر السطحي للبول في المثانة واحتباس البول (أعلى 4.5x لدى الرائدات الإناث - p.8) + استخدام حفاضات MAG وأدوية الدوار المضادة للكولين ← حصوات كالسيوم أوكسالات أو عدوى Pseudomonas (حادثة Fred Haise في Apollo 13)",
+    "dag_link_en": "0g Bone Resorption + Bladder Surface-Tension Retention (4.5x higher in females) + MAG/Anticholinergics → CaOx Stones (#2 Evac Risk) & Urosepsis (#3 Evac Risk)",
+    "level1": [
+      "تطبيق معيار الإماهة الإلزامي [V2 6109]: شرب >= 2.5 لتر ماء يومياً (بدرجة 18-27°C) + 240 مل/ساعة أثناء الـ EVA، وتجنب حبس البول الاختياري",
+      "فحص الكليتين والمثانة ذاتياً ببرنامج ناسا الموجه للموجات فوق الصوتية (AMOS - Autonomous Medical Officer Support Ultrasound - p.5) لقياس حجم الحصوة وحجم البول المتبقي (PVR)",
+      "تمارين المقاومة (ARED / Zero T2) للحفاظ على كثافة عظم الورك والعمود الفقري >= 95% [V1 4027] وتقليل الصوديوم والبروتين الحيواني"
+    ],
+    "level1_en": [
+      "Enforce NASA-STD-3001 [V2 6109] hydration: minimum 2.5 L/day potable water + 240 mL/hr during EVA [V2 11030]",
+      "Run guided renal & bladder scan using NASA AMOS (Autonomous Medical Officer Support) Ultrasound software (p.5) to check stone size (<3 mm vs >=3 mm)",
+      "Execute ARED / Zero T2 bone countermeasures to maintain hip/spine BMD >=95% [V1 4027]"
+    ],
+    "level2": [
+      "بروتوكول حصوات الكلى الدوائي والموجي (OCHMO-MTB-003 p.5, 7): إعطاء سترات البوتاسيوم (KCit - Whitson 2009) أو الثيازيد (Reilly 2010) أو البيسفوسفونات (Leblanc 2013) مع تامسولوسين (Tamsulosin - Cui 2019) لإرخاء الحالب وأوندانسيترون للغثيان، أو تحريك/تفتيت الحصوة بالموجات فوق الصوتية الدافعة (Propulsive Ultrasound / Burst Wave Lithotripsy)",
+      "في حال احتباس البول الحاد (9 حالات مسجلة فضائياً - p.8-9) أو عدوى المسالك (UTI): إجراء قسطرة موجهة بالسونار (Ultrasound-Guided Catheterization - Jones et al.) مع مضاد حيوي فوري بعد فحص فعاليته الإشعاعية لتفادي تسمم الدم (Urosepsis كما في Apollo 13 Fred Haise)"
+    ],
+    "level2_en": [
+      "Administer Potassium Citrate (KCit - Whitson 2009), Tamsulosin ureter relaxant (Cui 2019), Ondansetron, and apply Propulsive Ultrasound / Burst Wave Lithotripsy",
+      "For acute urinary retention (4.5x higher odds in females) or UTI: perform ultrasound-guided catheterization and administer Raman-verified antibiotic to prevent urosepsis"
+    ],
+    "pharmacy": {
+      "formulary_tier": "Core Formulary Renal & Urologic Kit (OCHMO-MTB-003 p.7 & ExMC Med02)",
+      "drug_name": "Potassium Citrate (KCit) + Tamsulosin + Bisphosphonates + Ciprofloxacin",
+      "base_dose_mg": 1080,
+      "potency_pct": 84.0,
+      "adjusted_dose_mg": 1285,
+      "verification_method": "Stored in Original Packaging (ExMC Q3) + FTIR API Check + AMOS Ultrasound Stone Sizing",
+      "source": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+    }
+  }
+]
